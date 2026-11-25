@@ -196,10 +196,13 @@ y = top
   right += T(RX + 4, y + 14, 'Asked during builds and changes. Users can skip, pause or dismiss.', { size: 11.5, fill: C.muted, id: 'Sketch caption' })
   y += 44
 }
-// What it learns.
+// What it learns: one of the most important parts, so it gets a proper heading.
 {
-  right += eyebrow(RX, y + 4, 'What it learns', C.muted)
-  y += 22
+  y += 6
+  right += G('What it learns – heading',
+    eyebrow(RX, y + 10, 'Six areas, built up over time', C.helper),
+    T(RX, y + 44, 'What Spark Helper learns', { size: 26, weight: 600, fill: C.text, id: 'Heading' }))
+  y += 66
   const topics = [
     ['Goals and motivations', 'guide them to what they want to achieve'],
     ['Experience and confidence', 'talk to them on their level'],
@@ -208,14 +211,16 @@ y = top
     ['Practical context', 'set the scope of suggestions and nudges'],
     ['Feedback style', 'match how Spark communicates'],
   ]
+  const rh = 54
   topics.forEach(([t, why], i) => {
-    const ry = y + i * 52
+    const ry = y + i * rh
     right += G(`Topic – ${t}`,
       i ? R(RX, ry, RW, 1, { fill: C.line, id: 'Rule' }) : '',
-      T(RX, ry + 22, t, { size: 13.5, weight: 600, fill: C.text, id: 'Topic' }),
-      T(RX, ry + 40, `To ${why}`, { size: 12, fill: C.muted, id: 'Why' }))
+      T(RX, ry + 24, String(i + 1).padStart(2, '0'), { size: 11, weight: 700, fill: C.helper, ls: 0.6, id: 'Number' }),
+      T(RX + 30, ry + 24, t, { size: 14.5, weight: 600, fill: C.text, id: 'Topic' }),
+      T(RX + 30, ry + 42, `To ${why}`, { size: 12.5, fill: C.muted, id: 'Why' }))
   })
-  y += topics.length * 52
+  y += topics.length * rh
 }
 svg += G('Visuals', right)
 const rightEnd = y
