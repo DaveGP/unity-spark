@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { recommendLook } from './looks'
 import {
-  BUILD_STEPS, CHANGES, NEXT_ORDER, PROFILE_QUESTIONS, answersComplete, isAnswered, isShortPrompt, titleFor,
-  type Answers, type Profile, type ProfileQuestion, type ProfileValue, type ChangeDef, type ChangeId, type Msg, type Project,
+  BUILD_STEPS, LEGACY_CHANGE_IDS, NEXT_ORDER, changeByTitle, changesFor, PROFILE_QUESTIONS, answersComplete, isAnswered, isShortPrompt, titleFor,
+  type Answers, type Profile, type ProfileQuestion, type ProfileValue, type ChangeDef, type ChangeId, type ChangeSlot, type Msg, type Project,
 } from './flow'
 
 /*
@@ -61,6 +61,11 @@ function load(): Saved | null {
       if (p.phase === 'working') p.phase = 'ready'
       p.future ??= []
       p.createdAt ??= p.editedAt
+      // Older saves used forest names (fox / dusk / clearing) as change ids.
+      const fix = <T extends { id: string }>(c: T) => (LEGACY_CHANGE_IDS[c.id] ? { ...c, id: LEGACY_CHANGE_IDS[c.id] } : c)
+      p.history = p.history.map(fix)
+      p.future = p.future.map(fix)
+      p.messages = p.messages.map((m) => (m.kind === 'next' ? { ...m, order: m.order.map((o) => LEGACY_CHANGE_IDS[o] ?? o) } : m))
     }
     // Move the first four answers from older saves into the profile.
     const a = s.answers
@@ -228,9 +233,9 @@ export function useStudio() {
   const sendFeedback = useCallback((id: string, text: string) => {
     push(id, { kind: 'user', text })
     const lower = text.toLowerCase()
-    const order: Exclude<ChangeId, 'custom'>[] = /easy|bigger|more to do|explore/.test(lower)
-      ? ['clearing', 'dusk', 'fox']
-      : /cozy|relax|calm|night|dark/.test(lower) && !/lonely|empty|alone/.test(lower) ? ['dusk', 'fox', 'clearing'] : [...NEXT_ORDER]
+    const order: ChangeSlot[] = /easy|bigger|more to do|explore/.test(lower)
+      ? ['area', 'atmosphere', 'companion']
+      : /cozy|relax|calm|night|dark|mood/.test(lower) && !/lonely|empty|alone/.test(lower) ? ['atmosphere', 'companion', 'area'] : [...NEXT_ORDER]
     const title = /love|great|fun|nice|good/.test(lower) ? 'Nice! Here’s what I’d do next' : 'Good shout. Here’s what I’d do next'
     const basis = answersComplete(answersOf(profileRef.current.profile)) ? 'Based on your feedback and favourite games' : 'Based on your feedback'
     reply(id, () => push(id, { kind: 'next', basis, title, order }), 1200)
@@ -247,9 +252,9 @@ export function useStudio() {
           about: `Spark is updating your project: “${customText}”.`,
           steps: ['Reading your request', 'Updating the project', 'Rebuilding the web preview'],
           changes: [customText ?? 'Your change'],
-          next: ['Add a fox companion', 'Add a second clearing', 'Gentle day–night cycle'],
+          next: NEXT_ORDER.filter((k) => !p.history.some((h) => h.id === k)).map((k) => changesFor(p.look)[k].title),
         }
-      : CHANGES[changeId]
+      : changesFor(p.look)[changeId]
     push(id, { kind: 'user', text: customText ?? def.title })
     update(id, (q) => ({ ...q, phase: 'working', workStep: 0 }))
     reply(id, () => {
@@ -278,7 +283,7 @@ export function useStudio() {
     }
     const last = [...p.messages].reverse().find((m) => m.kind !== 'user')
     if (last?.kind === 'feel') return sendFeedback(id, text)
-    const known = (Object.keys(CHANGES) as Exclude<ChangeId, 'custom'>[]).find((k) => CHANGES[k].title.toLowerCase() === text.toLowerCase())
+    const known = changeByTitle(p.look, text)
     applyChange(id, known ?? 'custom', known ? undefined : text)
   }, [answerClarify, applyChange, push, reply, sendFeedback])
 

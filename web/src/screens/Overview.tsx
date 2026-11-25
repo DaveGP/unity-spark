@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { Scene } from '../art/Scenes'
 import { Composer } from '../components/Composer'
 import { GameFor } from '../components/Preview'
-import { CHANGES, NEXT_ORDER, type ChangeId, type Project } from '../lib/flow'
+import { NEXT_ORDER, THEMES, changesFor, type ChangeSlot, type Project } from '../lib/flow'
 import { LOOKS } from '../lib/looks'
 import { hasChange, isPlayable, versionOf, type Studio } from '../lib/useStudio'
 
@@ -27,7 +27,7 @@ export function Overview({
   studio: Studio
   onContinue: (id: string) => void
   onPlay: (id: string) => void
-  onSuggest: (id: string, change: Exclude<ChangeId, 'custom'>) => void
+  onSuggest: (id: string, change: ChangeSlot) => void
   onPublish: (id: string) => void
   onStart: (prompt: string) => void
 }) {
@@ -49,13 +49,13 @@ export function Overview({
         {latest && (
           <div className="project-card">
             <div className="project-card__art">
-              {hasChange(latest, 'fox') ? <img src="assets/next-fox.jpg" alt="" /> : playable ? <GameFor project={latest} running={false} resetKey={0} /> : <Scene id={latest.look} />}
+              {hasChange(latest, 'companion') ? <img src={changesFor(latest.look).companion.image} alt="" /> : playable ? <GameFor project={latest} running={false} resetKey={0} /> : <Scene id={latest.look} />}
               <span className="tag">{versionOf(latest)}</span>
             </div>
             <div className="project-card__body">
               <h3>{latest.title}</h3>
               <p className="muted small">{edited(latest.editedAt)} · {LOOKS[latest.look].name} style</p>
-              <p>{last ? `Last change: ${last.title.charAt(0).toLowerCase()}${last.title.slice(1)}${last.id === 'fox' ? ' that points toward fireflies' : ''}.` : playable ? 'Your first playable is built and ready to try.' : 'Spark is still setting this one up.'}</p>
+              <p>{last ? `Last change: ${last.title.charAt(0).toLowerCase()}${last.title.slice(1)}${last.id === 'companion' ? ` that points toward ${THEMES[latest.look].pickups}` : ''}.` : playable ? 'Your first playable is built and ready to try.' : 'Spark is still setting this one up.'}</p>
               <div className="project-card__actions">
                 <button className="btn btn--primary" onClick={() => onContinue(latest.id)}>Continue building</button>
                 <button className="btn btn--ghost" disabled={!playable} onClick={() => onPlay(latest.id)}>Play latest</button>
@@ -73,8 +73,8 @@ export function Overview({
             <div className="suggest-grid">
               {todo.map((c) => (
                 <button key={c} className="suggest" onClick={() => onSuggest(latest.id, c)}>
-                  <strong>{CHANGES[c].title}</strong>
-                  <p>{c === 'clearing' && hasChange(latest, 'fox') ? 'A new area to explore with your fox.' : CHANGES[c].desc}</p>
+                  <strong>{changesFor(latest.look)[c].title}</strong>
+                  <p>{c === 'area' && hasChange(latest, 'companion') ? `A new area to explore with your ${THEMES[latest.look].companion}.` : changesFor(latest.look)[c].desc}</p>
                   <span className="suggest__go">Start →</span>
                 </button>
               ))}

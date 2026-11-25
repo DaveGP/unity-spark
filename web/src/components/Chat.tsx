@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import {
-  CHANGES, CLARIFY_OPTIONS, EXPERIENCE, FEEDBACK_CHIPS, GENRES, PLAY_STYLE, PROFILE_QUESTIONS, QUESTION_BY_ID,
+  CLARIFY_OPTIONS, THEMES, changeByTitle, changesFor, EXPERIENCE, FEEDBACK_CHIPS, GENRES, PLAY_STYLE, PROFILE_QUESTIONS, QUESTION_BY_ID,
   answersComplete, answersSummary, buildStepsFor, formatAnswer, isAnswered,
   type Answers, type ProfileQuestion, type ProfileValue, type ChangeDef, type ChangeId, type Msg, type Project,
 } from '../lib/flow'
@@ -224,7 +224,7 @@ export function ChatThread({
       case 'clarify': {
         const answer = msgs[i + 1]?.kind === 'user' ? (msgs[i + 1] as { text: string }).text : null
         const active = p.phase === 'clarify' && !p.thinking
-        const subject = /forest|wood/i.test(p.prompt) ? 'forest games' : 'ideas like this'
+        const subject = /forest|wood/i.test(p.prompt) ? 'forest games' : /space|station|planet|rocket|orbit/i.test(p.prompt) ? 'space games' : /city|town|deliver/i.test(p.prompt) ? 'city games' : 'ideas like this'
         return (
           <div className="msg msg--spark">
             <SparkHeader />
@@ -258,7 +258,7 @@ export function ChatThread({
           <div className="msg msg--spark">
             <SparkHeader />
             <h3 className="msg__title">Building your first playable</h3>
-            <p>Setting up a Unity project with {p.look === 'woodland' ? 'a forest look and a collect-the-fireflies loop' : 'your chosen look and a simple collect loop'}.</p>
+            <p>Setting up a Unity project with {THEMES[p.look].setup}.</p>
             <Steps items={steps} done={p.buildStep} />
             <ProgressBar value={p.buildStep / steps.length} />
           </div>
@@ -315,7 +315,7 @@ export function ChatThread({
           return (
             <div className="card collapsed">
               <strong>Suggested next steps</strong>
-              <span>Fox companion · Day–night cycle · Second clearing</span>
+              <span>{m.order.map((k) => changesFor(p.look)[k].title.replace(/^Add an? /, '')).map((t) => t.charAt(0).toUpperCase() + t.slice(1)).join(' · ')}</span>
             </div>
           )
         }
@@ -326,7 +326,7 @@ export function ChatThread({
             <span className="pill pill--helper">{m.basis}</span>
             <div className="next-list">
               {m.order.map((id, k) => {
-                const c = CHANGES[id]
+                const c = changesFor(p.look)[id]
                 const done = p.history.some((h) => h.id === id)
                 return (
                   <div key={id} className={`next-card ${k === 0 ? 'next-card--rec' : ''}`}>
@@ -374,7 +374,7 @@ export function ChatThread({
             <h4 className="msg__sub">Next, would you like to…</h4>
             <div className="chips">
               {m.change.next.map((n) => {
-                const known = (Object.keys(CHANGES) as Exclude<ChangeId, 'custom'>[]).find((k) => CHANGES[k].title === n)
+                const known = changeByTitle(p.look, n)
                 return <button key={n} className="chip" disabled={!ready || i !== lastIndex && i !== lastSpark} onClick={() => (known ? onPickChange(known) : onPickChange('custom', n))}>{n}</button>
               })}
             </div>

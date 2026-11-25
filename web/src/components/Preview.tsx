@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Scene } from '../art/Scenes'
 import { StarterGame } from '../game/StarterGame'
-import { buildStepsFor, type Msg, type Project } from '../lib/flow'
+import { THEMES, buildStepsFor, type Msg, type Project } from '../lib/flow'
 import { LOOKS } from '../lib/looks'
 import { STEP_MS, WORK_MS, hasChange, versionOf, type Studio } from '../lib/useStudio'
 import { ProgressBar, Spinner } from './Shell'
@@ -31,8 +31,8 @@ export function GameFor({ project, running, resetKey }: { project: Project; runn
   return (
     <StarterGame
       look={LOOKS[project.look]} running={running}
-      resetKey={resetKey + (hasChange(project, 'clearing') ? 100 : 0)}
-      fox={hasChange(project, 'fox')} night={hasChange(project, 'dusk')}
+      resetKey={resetKey + (hasChange(project, 'area') ? 100 : 0)}
+      companion={hasChange(project, 'companion')} night={hasChange(project, 'atmosphere')}
     />
   )
 }
@@ -105,7 +105,7 @@ export function PreviewPane({
   const updated = p.history.length > 0
   const version = versionOf(p)
   const canUndo = p.phase === 'ready' && (p.history.length > 0 || p.future.length > 0)
-  const isWoodland = p.look === 'woodland'
+  const theme = THEMES[p.look]
 
   const play = () => { setPlaying(true); studio.played(p.id) }
   const full = () => stage.current?.requestFullscreen?.()
@@ -180,14 +180,14 @@ export function PreviewPane({
             <p>
               {working && work
                 ? `${work.change.about} Your ${version} build is kept, so you can undo.`
-                : `Spark is creating a Unity project, importing ${isWoodland ? 'a forest' : `a ${look.category.toLowerCase()}`} asset pack and laying out a first level you can play straight away.`}
+                : `Spark is creating a Unity project, importing ${theme.pack} and laying out a first level you can play straight away.`}
             </p>
           </>
         ) : (
           <>
             <p className="eyebrow">How to play</p>
-            <h3>Collect all ten {isWoodland ? 'fireflies' : 'sparks'}</h3>
-            <p>Move with the arrow keys or WASD, or click to steer. Gather every {isWoodland ? 'firefly before nightfall' : 'spark you can find'}.</p>
+            <h3>Collect all ten {theme.pickups}</h3>
+            <p>Move with the arrow keys or WASD, or click to steer. Gather every {theme.pickup} {theme.goal}.</p>
           </>
         )}
       </div>

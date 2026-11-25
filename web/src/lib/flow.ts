@@ -10,10 +10,18 @@ export const BUILD_STEPS = [
   'Building a web preview',
 ]
 
-/** The forest build names its pack and pickups, like the walkthrough does. */
+/** Theme words used across the flow, so a space or city game never talks about fireflies. */
+export const THEMES: Record<LookId, {
+  pack: string; pickups: string; pickup: string; goal: string; setup: string; companion: string; player: string
+}> = {
+  woodland: { pack: 'the forest asset pack', pickups: 'fireflies', pickup: 'firefly', goal: 'before nightfall', setup: 'a forest look and a collect-the-fireflies loop', companion: 'fox', player: 'explorer' },
+  orbital: { pack: 'the space station kit', pickups: 'power cells', pickup: 'power cell', goal: 'to power up the escape pod', setup: 'a space station look and a collect-the-power-cells loop', companion: 'robot dog', player: 'astronaut' },
+  city: { pack: 'the tiny town pack', pickups: 'parcels', pickup: 'parcel', goal: 'before the clock runs out', setup: 'a tiny town look and a deliver-the-parcels loop', companion: 'drone', player: 'courier' },
+}
+
 export function buildStepsFor(look: LookId) {
-  if (look !== 'woodland') return BUILD_STEPS
-  return BUILD_STEPS.map((s) => s.replace('the asset pack', 'the forest asset pack').replace('collectibles', 'fireflies'))
+  const t = THEMES[look]
+  return BUILD_STEPS.map((s) => s.replace('the asset pack', t.pack).replace('collectibles', t.pickups))
 }
 
 export const MORE_IDEAS = [
@@ -43,7 +51,12 @@ export function answersSummary(a: Answers) {
   return [a.experience, a.play, a.games.trim() && `Loves ${a.games.trim()}`, genres].filter(Boolean).join(' · ')
 }
 
-export type ChangeId = 'fox' | 'dusk' | 'clearing' | 'custom'
+/** Every theme offers the same three kinds of next step, dressed for that world. */
+export type ChangeId = 'companion' | 'atmosphere' | 'area' | 'custom'
+export type ChangeSlot = Exclude<ChangeId, 'custom'>
+
+/** Older saves used the forest names as ids. */
+export const LEGACY_CHANGE_IDS: Record<string, ChangeSlot> = { fox: 'companion', dusk: 'atmosphere', clearing: 'area' }
 
 export interface ChangeDef {
   id: ChangeId
@@ -62,37 +75,105 @@ export interface ChangeDef {
   next: string[]
 }
 
-export const CHANGES: Record<Exclude<ChangeId, 'custom'>, ChangeDef> = {
-  fox: {
-    id: 'fox', title: 'Add a fox companion', desc: 'A friendly fox follows you and points out nearby fireflies.', reason: 'Less lonely',
-    image: 'assets/next-fox.jpg', focus: '43% 49%', zoom: 2.6,
-    doing: 'Adding a fox companion', doneTitle: 'Done — your fox is in.', historyTitle: 'Added fox companion',
-    about: 'Spark is adding a fox that follows the player and points toward nearby fireflies.',
-    steps: ['Finding a fox in the asset pack', 'Adding follow behaviour', 'Pointing toward nearby fireflies', 'Animating idle and walk', 'Rebuilding the web preview'],
-    changes: ['Fox companion that follows the player', 'Points toward the nearest firefly', 'Idle and walk animations'],
-    next: ['Make the fox faster', 'Give the fox a name', 'Let the fox carry fireflies'],
+export const CHANGES_BY_LOOK: Record<LookId, Record<ChangeSlot, ChangeDef>> = {
+  woodland: {
+    companion: {
+      id: 'companion', title: 'Add a fox companion', desc: 'A friendly fox follows you and points out nearby fireflies.', reason: 'Less lonely',
+      image: 'assets/next-fox.jpg', focus: '43% 49%', zoom: 2.6,
+      doing: 'Adding a fox companion', doneTitle: 'Done — your fox is in.', historyTitle: 'Added fox companion',
+      about: 'Spark is adding a fox that follows the player and points toward nearby fireflies.',
+      steps: ['Finding a fox in the asset pack', 'Adding follow behaviour', 'Pointing toward nearby fireflies', 'Animating idle and walk', 'Rebuilding the web preview'],
+      changes: ['Fox companion that follows the player', 'Points toward the nearest firefly', 'Idle and walk animations'],
+      next: ['Make the fox faster', 'Give the fox a name', 'Let the fox carry fireflies'],
+    },
+    atmosphere: {
+      id: 'atmosphere', title: 'Gentle day–night cycle', desc: 'Fireflies glow brighter as dusk falls — no timer stress.', reason: 'Cozy, like Stardew',
+      image: 'assets/next-dusk.jpg', focus: '50% 44%', zoom: 1.5,
+      doing: 'Adding a gentle day–night cycle', doneTitle: 'Done — dusk now falls gently.', historyTitle: 'Added day–night cycle',
+      about: 'Spark is adding a sky that drifts from day to dusk, with fireflies that glow brighter as night falls.',
+      steps: ['Adding a sky cycle', 'Making fireflies glow at dusk', 'Tuning the lighting', 'Rebuilding the web preview'],
+      changes: ['Sky drifts from day to dusk', 'Fireflies glow brighter as night falls', 'Warmer lighting in the cottage'],
+      next: ['Make nights longer', 'Add stars to the sky', 'Add a cozy campfire'],
+    },
+    area: {
+      id: 'area', title: 'Add a second clearing', desc: 'Grow the world with a new area to explore.', reason: 'Open world',
+      image: 'assets/next-clearing.jpg', focus: '66% 50%', zoom: 1.6,
+      doing: 'Adding a second clearing', doneTitle: 'Done — a new clearing is open.', historyTitle: 'Added a second clearing',
+      about: 'Spark is growing the world with a second clearing, joined to the first by a little bridge.',
+      steps: ['Generating a new clearing', 'Building a bridge between areas', 'Scattering fireflies and flowers', 'Rebuilding the web preview'],
+      changes: ['A second clearing to explore', 'A wooden bridge connecting the two', 'More fireflies to find'],
+      next: ['Add a hidden path', 'Put a secret in the clearing', 'Add a third area'],
+    },
   },
-  dusk: {
-    id: 'dusk', title: 'Gentle day–night cycle', desc: 'Fireflies glow brighter as dusk falls — no timer stress.', reason: 'Cozy, like Stardew',
-    image: 'assets/next-dusk.jpg', focus: '50% 44%', zoom: 1.5,
-    doing: 'Adding a gentle day–night cycle', doneTitle: 'Done — dusk now falls gently.', historyTitle: 'Added day–night cycle',
-    about: 'Spark is adding a sky that drifts from day to dusk, with fireflies that glow brighter as night falls.',
-    steps: ['Adding a sky cycle', 'Making fireflies glow at dusk', 'Tuning the lighting', 'Rebuilding the web preview'],
-    changes: ['Sky drifts from day to dusk', 'Fireflies glow brighter as night falls', 'Warmer lighting in the cottage'],
-    next: ['Make nights longer', 'Add stars to the sky', 'Add a cozy campfire'],
+  orbital: {
+    companion: {
+      id: 'companion', title: 'Add a robot dog companion', desc: 'A loyal robot dog trots beside you and sniffs out nearby power cells.', reason: 'Less lonely',
+      image: 'assets/next-orbital-companion.jpg', focus: '58% 54%', zoom: 2.4,
+      doing: 'Adding a robot dog companion', doneTitle: 'Done — your robot dog is online.', historyTitle: 'Added robot dog companion',
+      about: 'Spark is adding a robot dog that follows the astronaut and scans for nearby power cells.',
+      steps: ['Finding a robot dog in the station kit', 'Adding follow behaviour', 'Scanning for nearby power cells', 'Animating trot and idle', 'Rebuilding the web preview'],
+      changes: ['Robot dog that follows the astronaut', 'Scans toward the nearest power cell', 'Trot and idle animations'],
+      next: ['Give the robot dog a jetpack', 'Give the robot dog a name', 'Let it carry power cells'],
+    },
+    atmosphere: {
+      id: 'atmosphere', title: 'Emergency lighting', desc: 'Lights dim to a red glow and power cells shine brighter in the dark.', reason: 'More atmosphere',
+      image: 'assets/next-orbital-atmosphere.jpg', focus: '50% 45%', zoom: 1.4,
+      doing: 'Adding emergency lighting', doneTitle: 'Done — the station is running on emergency power.', historyTitle: 'Added emergency lighting',
+      about: 'Spark is dimming the station to emergency lighting, so the power cells glow brighter in the dark.',
+      steps: ['Switching to emergency lighting', 'Making power cells glow', 'Adding warning-light pulses', 'Rebuilding the web preview'],
+      changes: ['Station dims to a red emergency glow', 'Power cells shine brighter in the dark', 'Gentle warning-light pulses'],
+      next: ['Add a countdown alarm', 'Add a view of the stars', 'Make the lights flicker'],
+    },
+    area: {
+      id: 'area', title: 'Add a docking bay', desc: 'Open a new module to explore, linked by an airlock corridor.', reason: 'Open world',
+      image: 'assets/next-orbital-area.jpg', focus: '60% 50%', zoom: 1.15,
+      doing: 'Adding a docking bay', doneTitle: 'Done — the docking bay is open.', historyTitle: 'Added a docking bay',
+      about: 'Spark is adding a docking bay module, joined to the station by an airlock corridor.',
+      steps: ['Building a docking bay module', 'Connecting an airlock corridor', 'Scattering power cells and crates', 'Rebuilding the web preview'],
+      changes: ['A docking bay module to explore', 'An airlock corridor connecting the two', 'More power cells to find'],
+      next: ['Park an escape shuttle there', 'Add a zero-gravity room', 'Add a third module'],
+    },
   },
-  clearing: {
-    id: 'clearing', title: 'Add a second clearing', desc: 'Grow the world with a new area to explore.', reason: 'Open world',
-    image: 'assets/next-clearing.jpg', focus: '66% 50%', zoom: 1.6,
-    doing: 'Adding a second clearing', doneTitle: 'Done — a new clearing is open.', historyTitle: 'Added a second clearing',
-    about: 'Spark is growing the world with a second clearing, joined to the first by a little bridge.',
-    steps: ['Generating a new clearing', 'Building a bridge between areas', 'Scattering fireflies and flowers', 'Rebuilding the web preview'],
-    changes: ['A second clearing to explore', 'A wooden bridge connecting the two', 'More fireflies to find'],
-    next: ['Add a hidden path', 'Put a secret in the clearing', 'Add a third area'],
+  city: {
+    companion: {
+      id: 'companion', title: 'Add a delivery drone', desc: 'A little drone buzzes alongside and points out the next parcel.', reason: 'Less lonely',
+      image: 'assets/next-city-companion.jpg', focus: '40% 55%', zoom: 2.2,
+      doing: 'Adding a delivery drone', doneTitle: 'Done — your drone is airborne.', historyTitle: 'Added delivery drone',
+      about: 'Spark is adding a delivery drone that hovers beside the courier and points toward the next parcel.',
+      steps: ['Finding a drone in the town pack', 'Adding follow behaviour', 'Pointing toward the next parcel', 'Animating rotors and hover', 'Rebuilding the web preview'],
+      changes: ['Delivery drone that follows the courier', 'Points toward the next parcel', 'Rotor and hover animations'],
+      next: ['Make the drone faster', 'Give the drone a name', 'Let the drone carry parcels'],
+    },
+    atmosphere: {
+      id: 'atmosphere', title: 'Evening rush hour', desc: 'Street lights flicker on and the town glows warm as the sun sets.', reason: 'Cozy evening feel',
+      image: 'assets/next-city-atmosphere.jpg', focus: '50% 45%', zoom: 1.3,
+      doing: 'Adding evening rush hour', doneTitle: 'Done — the sun is setting over town.', historyTitle: 'Added evening rush hour',
+      about: 'Spark is moving the town into a warm evening, with street lights coming on and parcels easier to spot.',
+      steps: ['Adding a sunset sky', 'Switching on the street lights', 'Lighting up the windows', 'Rebuilding the web preview'],
+      changes: ['Warm sunset over the town', 'Street lights and glowing windows', 'Parcels glow so they’re easy to spot'],
+      next: ['Add some traffic', 'Add a night market', 'Add fireworks over the bay'],
+    },
+    area: {
+      id: 'area', title: 'Add a seaside district', desc: 'Unlock a boardwalk neighbourhood across a little bridge.', reason: 'Open world',
+      image: 'assets/next-city-area.jpg', focus: '65% 55%', zoom: 1.15,
+      doing: 'Adding a seaside district', doneTitle: 'Done — the seaside district is open.', historyTitle: 'Added a seaside district',
+      about: 'Spark is adding a seaside boardwalk district, joined to the town by a little bridge.',
+      steps: ['Building a seaside district', 'Adding a bridge between districts', 'Scattering parcels along the boardwalk', 'Rebuilding the web preview'],
+      changes: ['A seaside district to explore', 'A bridge connecting the two', 'More parcels to deliver'],
+      next: ['Add a ferry ride', 'Add an ice-cream stand', 'Add a third district'],
+    },
   },
 }
 
-export const NEXT_ORDER: Exclude<ChangeId, 'custom'>[] = ['fox', 'dusk', 'clearing']
+export const changesFor = (look: LookId) => CHANGES_BY_LOOK[look]
+
+/** Find the change a chip or typed message refers to, by title. */
+export function changeByTitle(look: LookId, text: string): ChangeSlot | undefined {
+  const all = changesFor(look)
+  return (Object.keys(all) as ChangeSlot[]).find((k) => all[k].title.toLowerCase() === text.trim().toLowerCase())
+}
+
+export const NEXT_ORDER: ChangeSlot[] = ['companion', 'atmosphere', 'area']
 
 /** A change that has been applied to a project (what Undo walks back through). */
 export interface AppliedChange {
@@ -113,7 +194,7 @@ export type Msg =
   | { kind: 'buildDone' }
   | { kind: 'ready' }
   | { kind: 'feel' }
-  | { kind: 'next'; basis: string; title: string; order: Exclude<ChangeId, 'custom'>[] }
+  | { kind: 'next'; basis: string; title: string; order: ChangeSlot[] }
   | { kind: 'working'; change: ChangeDef; from: number }
   | { kind: 'done'; change: ChangeDef }
 
