@@ -63,6 +63,7 @@ let y = 248 + sub.h + 44
   f += bracket(cx, cw, 'Bracket – changes')
   for (let i = 0; i < 2; i++) f += mark(cx + m + i * d, i + 1)
   f += T(ax + aw / 2, qy + 66, 'Spark Helper asks one question at a time while the user waits', { size: 12.5, fill: C.helper, anchor: 'middle', id: 'Caption' })
+  f += T(cx + cw / 2, qy + 66, 'Additional questions', { size: 12.5, fill: C.helper, anchor: 'middle', id: 'Caption – changes' })
   svg += G('Flow – where Spark Helper fits', f)
   y = qy + 66 + 34
 }
