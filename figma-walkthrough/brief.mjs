@@ -31,30 +31,37 @@ svg += G('Header', h)
 let y = 248 + sub.h + 44
 {
   const x0 = M, x1 = W - M, wd = x1 - x0
-  const stages = [
-    ['First prompt', 0.0, 0.17],
-    ['First build', 0.19, 0.62, true],
-    ['Play', 0.64, 0.79],
-    ['Next steps', 0.81, 1.0],
-  ]
+  // Five steps. Every box except First build is the same width, and both waits use the same
+  // question-mark spacing (d) and the same overhang (m) from the end question marks to the bracket ends:
+  //   First build = 2m + 4d (five questions), every other box = 2m + d (two questions under Changes).
+  const gap = 22, m = 30
+  const d = (wd - 4 * gap - 5 * 2 * m) / 8
+  const small = 2 * m + d, big = 2 * m + 4 * d
+  const stages = [['First prompt'], ['First build', 'wait'], ['Play'], ['Next steps'], ['Changes', 'change']]
   let f = ''
-  stages.forEach(([label, a, b, wait]) => {
-    const sx = x0 + a * wd, sw = (b - a) * wd
+  let sx = x0
+  const pos = {}
+  stages.forEach(([label, kind]) => {
+    const sw = kind === 'wait' ? big : small
+    const wait = !!kind
+    pos[label] = [sx, sw]
     f += G(`Stage – ${label}`,
       R(sx, y, sw, 44, { rx: 10, fill: wait ? C.accent : C.card, fo: wait ? 0.1 : undefined, stroke: wait ? C.accent2 : C.line2, id: 'Bar' }),
       T(sx + 16, y + 27.5, label, { size: 13, weight: 600, fill: wait ? C.accentText : C.text2, id: 'Label' }),
-      wait ? T(sx + sw - 16, y + 27.5, 'median 8 min 50 s', { size: 12, fill: C.muted, anchor: 'end', id: 'Duration' }) : '')
+      kind === 'wait' ? T(sx + sw - 16, y + 27.5, 'median 8 min 50 s', { size: 12, fill: C.muted, anchor: 'end', id: 'Duration' }) : '')
+    sx += sw + gap
   })
-  // Spark Helper fills the wait, one question at a time.
-  const ax = x0 + 0.19 * wd, aw = 0.43 * wd
   const qy = y + 62
-  f += `<path id="Bracket" d="M ${ax + 2} ${qy} v 8 H ${ax + aw - 2} v -8" fill="none" stroke="${C.helper}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>`
-  const dots = 5
-  for (let i = 0; i < dots; i++) {
-    const dx = ax + 30 + i * ((aw - 60) / (dots - 1))
-    f += `<circle id="Question ${i + 1}" cx="${dx}" cy="${qy + 32}" r="9" fill="${C.helper}" fill-opacity="${0.14 + i * 0.05}" stroke="${C.helper}" stroke-width="1.2"/>`
-    f += T(dx, qy + 36, '?', { size: 10.5, weight: 700, fill: C.helper, anchor: 'middle', id: 'Mark' })
-  }
+  const mark = (dx, n) =>
+    `<circle id="Question ${n}" cx="${dx}" cy="${qy + 32}" r="9" fill="${C.helper}" fill-opacity="${0.14 + (n - 1) * 0.05}" stroke="${C.helper}" stroke-width="1.2"/>`
+    + T(dx, qy + 36, '?', { size: 10.5, weight: 700, fill: C.helper, anchor: 'middle', id: 'Mark' })
+  const bracket = (bx, bw, id) => `<path id="${id}" d="M ${bx + 2} ${qy} v 8 H ${bx + bw - 2} v -8" fill="none" stroke="${C.helper}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>`
+  const [ax, aw] = pos['First build']
+  f += bracket(ax, aw, 'Bracket – first build')
+  for (let i = 0; i < 5; i++) f += mark(ax + m + i * d, i + 1)
+  const [cx, cw] = pos['Changes']
+  f += bracket(cx, cw, 'Bracket – changes')
+  for (let i = 0; i < 2; i++) f += mark(cx + m + i * d, i + 1)
   f += T(ax + aw / 2, qy + 66, 'Spark Helper asks one question at a time while the user waits', { size: 12.5, fill: C.helper, anchor: 'middle', id: 'Caption' })
   svg += G('Flow – where Spark Helper fits', f)
   y = qy + 66 + 34
