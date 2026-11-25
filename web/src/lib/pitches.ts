@@ -1,4 +1,4 @@
-// Ten ready-made game pitches, each built around a different Synty POLYGON asset pack.
+// Ten ready-made game pitches (images: each pack's first store screenshot, from syntystore.com), each built around a different Synty POLYGON asset pack.
 // When a new project starts, Spark picks the one that best fits the user's profile
 // (favourite games first, then genres, settings, mood and what they enjoy) and keeps
 // the rest as "more options".
@@ -50,7 +50,7 @@ export const PITCHES: Pitch[] = [
     genres: ['Open world', 'Action'], settings: ['Fantasy'], moods: ['Epic'], enjoys: ['Story', 'Exploring'],
   },
   {
-    id: 'farm', title: 'Sunny Acres farm', pack: 'POLYGON Farm', packUrl: synty('polygon-farm'), image: 'assets/synty/polygon-farm.jpg', look: 'woodland',
+    id: 'farm', title: 'Sunny Acres farm', pack: 'POLYGON Farm', packUrl: synty('polygon-farm-pack'), image: 'assets/synty/polygon-farm-pack.jpg', look: 'woodland',
     blurb: 'Grow crops, look after animals and sell at the market.',
     prompt: 'A cozy farming game built with Synty’s POLYGON Farm pack. Plant and harvest crops, look after your animals and sell your produce at the weekend market to grow the farm.',
     feel: 'cozy routine of tending a farm',
@@ -58,7 +58,7 @@ export const PITCHES: Pitch[] = [
     genres: ['Cozy / life sim'], settings: ['Nature'], moods: ['Calm'], enjoys: ['Building and creating', 'Collecting'], play: 'Relaxed',
   },
   {
-    id: 'sci-fi-space', title: 'Derelict station salvage', pack: 'POLYGON Sci-Fi Space', packUrl: synty('polygon-sci-fi-space'), image: 'assets/synty/polygon-sci-fi-space.jpg', look: 'orbital',
+    id: 'sci-fi-space', title: 'Derelict station salvage', pack: 'POLYGON Sci-Fi Space', packUrl: synty('polygon-sci-fi-space-pack'), image: 'assets/synty/polygon-sci-fi-space-pack.jpg', look: 'orbital',
     blurb: 'Salvage a drifting station and restore power before the air runs out.',
     prompt: 'A sci-fi exploration game built with Synty’s POLYGON Sci-Fi Space pack. Board a drifting space station, salvage parts, solve power puzzles and get the engines running before your oxygen runs out.',
     feel: 'sci-fi feel of exploring somewhere vast and unknown',
@@ -66,7 +66,7 @@ export const PITCHES: Pitch[] = [
     genres: ['Action', 'Puzzle'], settings: ['Sci-fi'], moods: ['Tense', 'Epic'], enjoys: ['Exploring', 'Solving puzzles'],
   },
   {
-    id: 'apocalypse', title: 'Last light survival', pack: 'POLYGON Apocalypse', packUrl: synty('polygon-apocalypse'), image: 'assets/synty/polygon-apocalypse.jpg', look: 'city',
+    id: 'apocalypse', title: 'Last light survival', pack: 'POLYGON Apocalypse', packUrl: synty('polygon-apocalypse-pack'), image: 'assets/synty/polygon-apocalypse-pack.jpg', look: 'city',
     blurb: 'Scavenge by day and hold your safehouse through the night.',
     prompt: 'A survival game in a ruined town, built with Synty’s POLYGON Apocalypse pack. Scavenge supplies by day, then barricade your safehouse and hold out against the zombies through the night.',
     feel: 'tense scavenge-and-survive loop',
@@ -82,7 +82,7 @@ export const PITCHES: Pitch[] = [
     genres: ['Open world', 'Action'], settings: ['Historical', 'Fantasy'], moods: ['Funny', 'Epic'], enjoys: ['Exploring', 'Collecting', 'Playing with friends'], play: 'Relaxed',
   },
   {
-    id: 'western', title: 'Frontier outlaw', pack: 'POLYGON Western', packUrl: synty('polygon-western'), image: 'assets/synty/polygon-western.jpg', look: 'city',
+    id: 'western', title: 'Frontier outlaw', pack: 'POLYGON Western', packUrl: synty('polygon-western-pack'), image: 'assets/synty/polygon-western-pack.jpg', look: 'city',
     blurb: 'Take bounty jobs and face off in high-noon duels.',
     prompt: 'A Wild West adventure built with Synty’s POLYGON Western pack. Ride into a frontier town, take on bounty jobs and face rival outlaws in high-noon duels.',
     feel: 'frontier story with showdowns',
@@ -106,7 +106,7 @@ export const PITCHES: Pitch[] = [
     genres: ['Action', 'Strategy'], settings: ['Fantasy', 'Horror'], moods: ['Tense', 'Spooky'], enjoys: ['Competing', 'Collecting'], play: 'Challenging',
   },
   {
-    id: 'vikings', title: 'Viking winter village', pack: 'POLYGON Vikings', packUrl: synty('polygon-vikings'), image: 'assets/synty/polygon-vikings.jpg', look: 'woodland',
+    id: 'vikings', title: 'Viking winter village', pack: 'POLYGON Vikings', packUrl: synty('polygon-vikings-pack'), image: 'assets/synty/polygon-vikings-pack.jpg', look: 'woodland',
     blurb: 'Build a fjord village and defend it through the long winter.',
     prompt: 'A Viking survival game built with Synty’s POLYGON Vikings pack. Build a village on a fjord, gather wood and food, and defend it from raiders through the long winter.',
     feel: 'build-and-survive feel',
