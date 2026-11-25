@@ -4,6 +4,7 @@ import { HelperQuestions } from '../components/Chat'
 import { Composer } from '../components/Composer'
 import { MORE_IDEAS, STARTER_IDEAS, answersComplete, draftFromAnswers } from '../lib/flow'
 import type { Studio } from '../lib/useStudio'
+import { draftNotes, dreamDraft, settingDrafts } from '../lib/personalise'
 
 /** ONB-102: the first screen after sign-in, with ideas inside the empty prompt box. */
 export function Home({ name, onStart }: { name: string; onStart: (prompt: string) => void }) {
@@ -63,8 +64,22 @@ export function NewChat({ name, studio, onStart, onSkip }: { name: string; studi
   const [asking, setAsking] = useState(() => !(studio.answersSaved && answersComplete(studio.answers)))
   const [variant, setVariant] = useState(0)
   const [editing, setEditing] = useState(false)
-  const base = draftFromAnswers(studio.answers)
-  const draft = variant === 0 ? base : ALT[(variant - 1) % ALT.length]
+  // Their own idea first (if they shared one), then favourite games, then settings they like.
+  const games0 = studio.answers.games.split(',')[0]?.trim()
+  const genre0 = studio.answers.genres[0]?.replace(' / life sim', '')
+  const options = [
+    ...(dreamDraft(studio.profile) ? [{ ...dreamDraft(studio.profile)!, pill: '✦ Your own idea, from your profile', basis: 'your game idea' }] : []),
+    // The favourite-games draft only falls back to the forest hunt; skip that when a better match exists.
+    ...(draftFromAnswers(studio.answers).title !== 'Open-world firefly hunt' || !settingDrafts(studio.profile).length
+      ? [{ ...draftFromAnswers(studio.answers), pill: '✦ Drafted from your favourite games', basis: [games0, genre0, studio.answers.experience].filter(Boolean).join(' · ') }]
+      : []),
+    ...settingDrafts(studio.profile).map((d) => d.tag.startsWith('Inspired by')
+      ? { ...d, pill: '✦ Drafted from your favourite games', basis: [d.tag.replace('Inspired by ', ''), studio.answers.experience].filter(Boolean).join(' · ') }
+      : { ...d, pill: '✦ Drafted from the settings you like', basis: [d.tag.replace('Because you like ', ''), studio.answers.experience].filter(Boolean).join(' · ') }),
+    ...ALT.map((d) => ({ ...d, pill: '✦ Another idea for you', basis: [games0, genre0].filter(Boolean).join(' · ') })),
+  ].filter((d, i, all) => all.findIndex((x) => x.title === d.title) === i)
+  const draft = options[variant % options.length]
+  const notes = draftNotes(studio.profile)
   const [text, setText] = useState<string | null>(null)
   const prompt = text ?? draft.prompt
 
@@ -84,8 +99,6 @@ export function NewChat({ name, studio, onStart, onSkip }: { name: string; studi
     )
   }
 
-  const games = studio.answers.games.split(/,|\band\b/).map((g) => g.trim()).filter(Boolean)
-  const firstGenre = studio.answers.genres[0]?.replace(' / life sim', '')
   return (
     <div className="page">
       <div className="page__inner">
@@ -94,7 +107,7 @@ export function NewChat({ name, studio, onStart, onSkip }: { name: string; studi
         <p className="muted intro">I’ve drafted a starting point from the games you told me you love. Send it as it is, or change anything first.</p>
 
         <div className="prompt-box is-typing">
-          <span className="pill pill--helper">✦ Drafted from your favourite games</span>
+          <span className="pill pill--helper">{draft.pill}</span>
           {editing
             ? <textarea rows={3} value={prompt} autoFocus onChange={(e) => setText(e.target.value)} />
             : <p className="prompt-box__draft">{prompt}</p>}
@@ -116,9 +129,9 @@ export function NewChat({ name, studio, onStart, onSkip }: { name: string; studi
           </div>
           <div className="why-card__body">
             <h3>{draft.title}</h3>
-            <p className="muted small">{draft.meta}</p>
+            <p className="muted small">{[draft.meta, ...notes].join(' · ')}</p>
             <p>{draft.why}</p>
-            <span className="pill pill--helper">Based on: {[games[0], firstGenre, studio.answers.experience].filter(Boolean).join(' · ')}</span>
+            <span className="pill pill--helper">Based on: {draft.basis}</span>
           </div>
         </div>
 

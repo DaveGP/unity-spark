@@ -117,7 +117,7 @@ export default function App() {
               name={user.name} studio={studio} onStart={start}
               onContinue={(id) => go({ kind: 'project', id })}
               onPlay={(id) => go({ kind: 'play', id })}
-              onSuggest={(id, c) => { go({ kind: 'project', id }); studio.applyChange(id, c) }}
+              onSuggest={(id, c, text) => { go({ kind: 'project', id }); studio.applyChange(id, c, text) }}
               onPublish={(id) => setPublishing({ id, step: 'settings' })}
             />
           )}
@@ -133,6 +133,7 @@ export default function App() {
               key={current.id} project={current} studio={studio}
               playing={playing} setPlaying={setPlaying}
               previewOpen={previewOpen} setPreviewOpen={setPreviewOpen}
+              onPublish={() => setPublishing({ id: current.id, step: 'settings' })}
             />
           )}
           {view.kind === 'play' && current && (

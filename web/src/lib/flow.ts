@@ -194,7 +194,7 @@ export type Msg =
   | { kind: 'buildDone' }
   | { kind: 'ready' }
   | { kind: 'feel' }
-  | { kind: 'next'; basis: string; title: string; order: ChangeSlot[] }
+  | { kind: 'next'; basis: string; title: string; order: ChangeSlot[]; reasons?: Partial<Record<ChangeSlot, string>> }
   | { kind: 'working'; change: ChangeDef; from: number }
   | { kind: 'done'; change: ChangeDef }
 

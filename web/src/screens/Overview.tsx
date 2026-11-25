@@ -2,7 +2,8 @@ import { useEffect } from 'react'
 import { Scene } from '../art/Scenes'
 import { Composer } from '../components/Composer'
 import { GameFor } from '../components/Preview'
-import { NEXT_ORDER, THEMES, changesFor, type ChangeSlot, type Project } from '../lib/flow'
+import { THEMES, changesFor, type ChangeSlot, type Project } from '../lib/flow'
+import { overviewNudge, rankNextSteps } from '../lib/personalise'
 import { LOOKS } from '../lib/looks'
 import { hasChange, isPlayable, versionOf, type Studio } from '../lib/useStudio'
 
@@ -27,7 +28,7 @@ export function Overview({
   studio: Studio
   onContinue: (id: string) => void
   onPlay: (id: string) => void
-  onSuggest: (id: string, change: ChangeSlot) => void
+  onSuggest: (id: string, change: ChangeSlot | 'custom', text?: string) => void
   onPublish: (id: string) => void
   onStart: (prompt: string) => void
 }) {
@@ -35,9 +36,11 @@ export function Overview({
   const latest = list[0]
   const playable = latest && isPlayable(latest)
   const last = latest?.history[latest.history.length - 1]
-  const todo = latest ? NEXT_ORDER.filter((c) => !hasChange(latest, c)).slice(0, 2) : []
-  const a = studio.answers
-  const basis = studio.answersSaved ? [a.games.split(',')[1]?.trim() || a.games.split(',')[0]?.trim(), a.genres[0]?.replace(' / life sim', '')].filter(Boolean).join(' · ') : ''
+  // Rank today's suggestions from the profile alone (no fresh feedback here).
+  const ranking = latest ? rankNextSteps(studio.profile, '', latest.look, latest.history.map((h) => h.id).filter((h): h is ChangeSlot => h !== 'custom')) : null
+  const todo = latest && ranking ? ranking.order.filter((c) => !hasChange(latest, c)).slice(0, 2) : []
+  const basis = ranking?.basis.replace(/^Based on your feedback( · )?/, '') ?? ''
+  const nudge = overviewNudge(studio.profile)
 
   return (
     <div className="page">
@@ -75,13 +78,14 @@ export function Overview({
                 <button key={c} className="suggest" onClick={() => onSuggest(latest.id, c)}>
                   <strong>{changesFor(latest.look)[c].title}</strong>
                   <p>{c === 'area' && hasChange(latest, 'companion') ? `A new area to explore with your ${THEMES[latest.look].companion}.` : changesFor(latest.look)[c].desc}</p>
+                  {ranking?.reasons[c] && <span className="suggest__why">{ranking.reasons[c]}</span>}
                   <span className="suggest__go">Start →</span>
                 </button>
               ))}
-              <button className="suggest" onClick={() => onPublish(latest.id)}>
-                <strong>Share it with friends</strong>
-                <p>Publish a build friends can play from a link, or publish it to Google Playgrounds.</p>
-                <span className="suggest__go">Publish →</span>
+              <button className="suggest" onClick={() => (nudge.action === 'publish' ? onPublish(latest.id) : onSuggest(latest.id, 'custom', nudge.change))}>
+                <strong>{nudge.title}</strong>
+                <p>{nudge.desc}</p>
+                <span className="suggest__go">{nudge.cta}</span>
               </button>
             </div>
           </>

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { recommendLook } from './looks'
+import { persona, rankNextSteps, say } from './personalise'
 import {
   BUILD_STEPS, LEGACY_CHANGE_IDS, NEXT_ORDER, changeByTitle, changesFor, PROFILE_QUESTIONS, answersComplete, isAnswered, isShortPrompt, titleFor,
   type Answers, type Profile, type ProfileQuestion, type ProfileValue, type ChangeDef, type ChangeId, type ChangeSlot, type Msg, type Project,
@@ -157,7 +158,12 @@ export function useStudio() {
       reply(id, () => push(id, { kind: 'clarify' }), 1000)
     } else {
       reply(id, () => {
-        push(id, { kind: 'spark', text: 'Love it. I’m building your first playable now — I’ll show you progress as I go.', starting: true })
+        const tone = persona(profileRef.current.profile).tone
+        push(id, { kind: 'spark', starting: true, text: say(tone, {
+          short: 'On it. Building your first playable now.',
+          friendly: 'Love it. I’m building your first playable now — I’ll show you progress as I go.',
+          detailed: 'Love it. I’ll create a Unity project, import an asset pack, lay out a first level, add a player and build a web preview, showing each step as I go.',
+        }) })
         later(() => startBuild(id), 1200)
       }, 900)
     }
@@ -178,7 +184,12 @@ export function useStudio() {
       look: recommendLook(`${q.prompt} ${answer ?? ''}`),
     }))
     reply(id, () => {
-      push(id, { kind: 'spark', text: 'Perfect. I’m building your first playable now — I’ll show you progress as I go.', starting: true })
+      const tone = persona(profileRef.current.profile).tone
+      push(id, { kind: 'spark', starting: true, text: say(tone, {
+        short: 'Got it. Building your first playable now.',
+        friendly: 'Perfect. I’m building your first playable now — I’ll show you progress as I go.',
+        detailed: 'Perfect. I’ll create a Unity project, import an asset pack, lay out a first level, add a player and build a web preview, showing each step as I go.',
+      }) })
       later(() => startBuild(id), 1400)
     })
   }, [later, push, reply, startBuild, update])
@@ -233,12 +244,18 @@ export function useStudio() {
   const sendFeedback = useCallback((id: string, text: string) => {
     push(id, { kind: 'user', text })
     const lower = text.toLowerCase()
-    const order: ChangeSlot[] = /easy|bigger|more to do|explore/.test(lower)
-      ? ['area', 'atmosphere', 'companion']
-      : /cozy|relax|calm|night|dark|mood/.test(lower) && !/lonely|empty|alone/.test(lower) ? ['atmosphere', 'companion', 'area'] : [...NEXT_ORDER]
-    const title = /love|great|fun|nice|good/.test(lower) ? 'Nice! Here’s what I’d do next' : 'Good shout. Here’s what I’d do next'
-    const basis = answersComplete(answersOf(profileRef.current.profile)) ? 'Based on your feedback and favourite games' : 'Based on your feedback'
-    reply(id, () => push(id, { kind: 'next', basis, title, order }), 1200)
+    const p = projectsRef.current[id]
+    if (!p) return
+    // Rank the three next steps from this feedback plus everything in the profile.
+    const prof = profileRef.current.profile
+    const { order, reasons, basis } = rankNextSteps(prof, text, p.look, p.history.map((h) => h.id).filter((h): h is ChangeSlot => h !== 'custom'))
+    const liked = /love|great|fun|nice|good/.test(lower)
+    const title = say(persona(prof).tone, {
+      short: 'Next steps',
+      friendly: liked ? 'Nice! Here’s what I’d do next' : 'Good shout. Here’s what I’d do next',
+      detailed: liked ? 'Glad you like it. Here’s what I’d do next, and why' : 'Thanks, that helps. Here’s what I’d do next, and why',
+    })
+    reply(id, () => push(id, { kind: 'next', basis, title, order, reasons }), 1200)
   }, [push, reply])
 
   // ───────── Changes, undo and publishing ─────────

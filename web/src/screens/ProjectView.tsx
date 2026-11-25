@@ -7,8 +7,9 @@ import type { Studio } from '../lib/useStudio'
 
 /** One conversation: full-width chat until the build starts, then split view (ONB-104). */
 export function ProjectView({
-  project, studio, playing, setPlaying, previewOpen, setPreviewOpen,
+  project, studio, playing, setPlaying, previewOpen, setPreviewOpen, onPublish,
 }: {
+  onPublish?: () => void
   project: Project
   studio: Studio
   playing: boolean
@@ -43,7 +44,7 @@ export function ProjectView({
   }
 
   const thread = (
-    <ChatThread project={p} studio={studio} onPickChange={(id, text) => studio.applyChange(p.id, id, text)} />
+    <ChatThread project={p} studio={studio} onPublish={onPublish} onPickChange={(id, text) => studio.applyChange(p.id, id, text)} />
   )
   const composer = (
     <Composer

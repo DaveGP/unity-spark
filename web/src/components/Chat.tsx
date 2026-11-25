@@ -5,6 +5,7 @@ import {
   type Answers, type ProfileQuestion, type ProfileValue, type ChangeDef, type ChangeId, type Msg, type Project,
 } from '../lib/flow'
 import { STEP_MS, type Studio } from '../lib/useStudio'
+import { howItWorks, persona, say, tweaks, unityFiles } from '../lib/personalise'
 import { ProgressBar, SparkHeader, Spinner, Steps } from './Shell'
 
 // ───────────────────────── Spark Helper questions (ONB-110) ─────────────────────────
@@ -189,13 +190,17 @@ function UserMsg({ text }: { text: string }) {
 }
 
 export function ChatThread({
-  project, studio, onPickChange,
+  project, studio, onPickChange, onPublish,
 }: {
   project: Project
   studio: Studio
   onPickChange: (id: ChangeId | 'custom', text?: string) => void
+  onPublish?: () => void
 }) {
   const p = project
+  const me = persona(studio.profile)
+  const [showAll, setShowAll] = useState<number[]>([])
+  const [learnOpen, setLearnOpen] = useState<number[]>([])
   const end = useRef<HTMLDivElement>(null)
   useEffect(() => { end.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }) }, [p.messages.length, p.thinking, p.buildStep, p.workStep])
 
@@ -284,7 +289,11 @@ export function ChatThread({
           <div className="msg msg--spark">
             <SparkHeader />
             <h3 className="msg__title">Your first playable is ready.</h3>
-            <p>Press Play in the preview to try it out.</p>
+            <p>{say(me.tone, {
+              short: 'Press Play to try it.',
+              friendly: 'Press Play in the preview to try it out.',
+              detailed: `Press Play in the preview to try it out. Move with the arrow keys or WASD, or click to steer, and collect all ten ${THEMES[p.look].pickups}.`,
+            })}</p>
           </div>
         )
 
@@ -302,7 +311,11 @@ export function ChatThread({
           <div className="msg msg--spark">
             <SparkHeader />
             <h3 className="msg__title">How does it feel?</h3>
-            <p>Have a play, then tell me what you think — what’s fun, and what would you change?</p>
+            <p>{say(me.tone, {
+              short: 'What would you change?',
+              friendly: 'Have a play, then tell me what you think — what’s fun, and what would you change?',
+              detailed: 'Have a play, then tell me what you think. What’s fun, what feels off, and what would you change? The more specific, the better my suggestions.',
+            })}</p>
             <div className="chips">
               {FEEDBACK_CHIPS.map((c) => <button key={c} className="chip" disabled={!ready} onClick={() => studio.sendFeedback(p.id, c)}>{c}</button>)}
             </div>
@@ -325,7 +338,8 @@ export function ChatThread({
             <h3 className="msg__title">{m.title}</h3>
             <span className="pill pill--helper">{m.basis}</span>
             <div className="next-list">
-              {m.order.map((id, k) => {
+              {/* "Spark decides, I steer": lead with one recommendation, others on request. */}
+              {(me.sparkDecides && !showAll.includes(i) ? m.order.slice(0, 1) : m.order).map((id, k) => {
                 const c = changesFor(p.look)[id]
                 const done = p.history.some((h) => h.id === id)
                 return (
@@ -341,13 +355,16 @@ export function ChatThread({
                         <button className={`btn btn--xs ${k === 0 ? 'btn--primary' : 'btn--ghost'}`} disabled={!ready || done} onClick={() => onPickChange(id)}>
                           {done ? 'Added ✓' : 'Do this next'}
                         </button>
-                        <span className="fine">{c.reason}</span>
+                        <span className={`fine ${m.reasons?.[id] ? 'reason--personal' : ''}`}>{m.reasons?.[id] ?? c.reason}</span>
                       </div>
                     </div>
                   </div>
                 )
               })}
             </div>
+            {me.sparkDecides && !showAll.includes(i) && (
+              <button className="btn btn--text btn--xs other-ideas" onClick={() => setShowAll((s) => [...s, i])}>Show other ideas</button>
+            )}
           </div>
         )
       }
@@ -358,28 +375,68 @@ export function ChatThread({
           <div className="msg msg--spark">
             <SparkHeader />
             <h3 className="msg__title">{m.change.doing}</h3>
-            <p>On it. I’ll keep your current version, so you can undo this later.</p>
+            <p>{say(me.tone, {
+              short: 'On it. You can undo this later.',
+              friendly: 'On it. I’ll keep your current version, so you can undo this later.',
+              detailed: `On it. ${m.change.about.replace(/^Spark is /, 'I’m ')} I’ll keep your current version, so you can undo this later.`,
+            })}</p>
             <Steps items={m.change.steps} done={p.workStep} />
             <ProgressBar value={p.workStep / m.change.steps.length} />
           </div>
         )
 
-      case 'done':
+      case 'done': {
+        const slot = m.change.id
+        const isLast = i === lastIndex || i === lastSpark
+        const firstDone = msgs.findIndex((x) => x.kind === 'done') === i
+        // Next chips: the change's own follow-ups, plus tweaks or "use my own art" if the profile asks for them.
+        const chips = [
+          ...m.change.next,
+          ...(me.hands ? tweaks(slot, p.look).slice(0, 1) : []),
+          ...(me.ownArt && slot === 'companion' ? [`Use my own ${THEMES[p.look].companion} art`] : []),
+        ]
         return (
           <div className="msg msg--spark">
             <SparkHeader />
             <h3 className="msg__title">{m.change.doneTitle}</h3>
-            <p>Here’s what changed in your project:</p>
-            <ul className="changes">{m.change.changes.map((c) => <li key={c}><b>+</b>{c}</li>)}</ul>
-            <h4 className="msg__sub">Next, would you like to…</h4>
+            {me.detail === 'result' ? (
+              <p>{say(me.tone, { short: 'Press Play to try it.', friendly: 'Press Play in the preview to try it out.', detailed: 'It’s in the preview now. Press Play to try it out.' })}</p>
+            ) : (
+              <>
+                <p>Here’s what changed in your project:</p>
+                <ul className="changes">{m.change.changes.map((c) => <li key={c}><b>+</b>{c}</li>)}</ul>
+                {me.detail === 'unity' && (
+                  <div className="unity-files">
+                    <span className="fine">Changed in Unity</span>
+                    {unityFiles(slot, p.look).map((f) => <code key={f}>{f}</code>)}
+                  </div>
+                )}
+              </>
+            )}
+            {me.teach && (
+              <div className={`learn ${learnOpen.includes(i) ? 'is-open' : ''}`}>
+                <button className="learn__toggle" onClick={() => setLearnOpen((s) => (s.includes(i) ? s.filter((x) => x !== i) : [...s, i]))}>
+                  <span>💡 How this works</span><span aria-hidden>{learnOpen.includes(i) ? '−' : '+'}</span>
+                </button>
+                {learnOpen.includes(i) && <p>{howItWorks(slot, p.look)}</p>}
+              </div>
+            )}
+            {me.sharing && firstDone && !p.publishedAt && onPublish && (
+              <div className="nudge">
+                <span><b>Ready to show someone?</b> Publish a link friends can play in their browser.</span>
+                <button className="btn btn--ghost btn--xs" onClick={onPublish}>Publish</button>
+              </div>
+            )}
+            <h4 className="msg__sub">{say(me.tone, { short: 'Next:', friendly: 'Next, would you like to…', detailed: 'Next, would you like to…' })}</h4>
             <div className="chips">
-              {m.change.next.map((n) => {
+              {chips.map((n) => {
                 const known = changeByTitle(p.look, n)
-                return <button key={n} className="chip" disabled={!ready || i !== lastIndex && i !== lastSpark} onClick={() => (known ? onPickChange(known) : onPickChange('custom', n))}>{n}</button>
+                return <button key={n} className="chip" disabled={!ready || !isLast} onClick={() => (known ? onPickChange(known) : onPickChange('custom', n))}>{n}</button>
               })}
             </div>
           </div>
         )
+      }
     }
   }
 
