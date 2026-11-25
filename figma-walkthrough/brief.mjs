@@ -107,18 +107,9 @@ y = top
   y += HEAD + a.h + GAP
 }
 
-// 04 Risks
-{
-  let s = head('04', 'Risks', y)
-  const a = body('Some users may find the questions annoying, so they can dismiss Spark Helper and turn it back on later from their profile.', y + HEAD)
-  s += a.svg
-  left += G('04 Risks', s)
-  y += HEAD + a.h + GAP
-}
-
 // 04 Roadmap
 {
-  let s = head('05', 'Roadmap', y)
+  let s = head('04', 'Roadmap', y)
   const yy = y + HEAD
   const cw = (LW - 28) / 2
   const col = (x, label, color, text) => {
@@ -128,13 +119,13 @@ y = top
   const a = col(LX, 'First version', C.accent, 'Introduce the questions, store the answers for each user and use that data to inform recommendations.')
   const b = col(LX + cw + 28, 'Later', C.muted, 'The AI team uses the profile to further improve the quality of responses and refine the experience for each individual.')
   s += G('First version', a.svg) + G('Later', b.svg)
-  left += G('05 Roadmap', s)
+  left += G('04 Roadmap', s)
   y = yy + Math.max(a.h, b.h) + GAP
 }
 
 // 05 How we'll know it worked
 {
-  let s = head('06', 'How we’ll know it worked', y)
+  let s = head('05', 'How we’ll know it worked', y)
   const a = body('More people sticking around long enough to get something playable, and through each step of the funnel after that. We’d also expect the end result to be better suited to each user’s ideas and preferences.', y + HEAD)
   s += a.svg
   let px = LX
@@ -144,8 +135,17 @@ y = top
     s += G(`Metric – ${t}`, R(px, py, w, 28, { rx: 14, fill: col, fo: 0.1, stroke: col, sw: 1, id: 'Pill' }), T(px + w / 2, py + 18.5, t, { size: 12, weight: 600, fill: col, anchor: 'middle', id: 'Label' }))
     px += w + 8
   })
-  left += G('06 How we’ll know it worked', s)
+  left += G('05 How we’ll know it worked', s)
   y = py + 28 + GAP
+}
+
+// 06 Risks
+{
+  let s = head('06', 'Risks', y)
+  const a = body('Some users may find the questions annoying, so they can dismiss Spark Helper and turn it back on later from their profile.', y + HEAD)
+  s += a.svg
+  left += G('06 Risks', s)
+  y += HEAD + a.h
 }
 
 svg += G('Brief', left)
