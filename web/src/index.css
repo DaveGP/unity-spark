@@ -599,7 +599,8 @@ button.chip--accent:hover { background: #d3c7ff; color: var(--accent-ink); borde
   .why-card, .project-card { grid-template-columns: 1fr; }
   .why-card__body, .project-card__body { padding: 4px 4px 8px; }
   .split { display: flex; flex-direction: column; overflow-y: auto; }
-  .split__chat { border-right: 0; border-bottom: 1px solid var(--line); padding: 0 16px 14px; max-height: none; }
+  .split__chat { flex: none; border-right: 0; border-bottom: 1px solid var(--line); padding: 0 16px 14px; max-height: none; }
+  .split > .panel { flex: none; animation: none; }
   .split__scroll { overflow: visible; }
   .panel { overflow: visible; padding: 20px 16px; }
   .panel__head { flex-direction: column; }
@@ -682,3 +683,5 @@ button.chip--accent:hover { background: #d3c7ff; color: var(--accent-ink); borde
 .unity__col { padding-top: 110px; }
 .unity__field input[readonly] { color: #cfcfcf; cursor: default; }
 .unity__demo { font-size: 12.5px; color: #9a9a9a; margin: -10px 0 -4px; }
+.ask__off { margin-left: auto; color: var(--faint); }
+.link-btn { background: none; border: 0; padding: 0; color: var(--ok); font-size: inherit; text-decoration: underline; text-underline-offset: 2px; }

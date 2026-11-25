@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { recommendLook } from './looks'
 import {
-  BUILD_STEPS, CHANGES, EMPTY_ANSWERS, NEXT_ORDER, PROFILE_QUESTIONS, isAnswered, isShortPrompt, titleFor,
+  BUILD_STEPS, CHANGES, NEXT_ORDER, PROFILE_QUESTIONS, answersComplete, isAnswered, isShortPrompt, titleFor,
   type Answers, type Profile, type ProfileQuestion, type ProfileValue, type ChangeDef, type ChangeId, type Msg, type Project,
 } from './flow'
 
@@ -22,8 +22,22 @@ export const hasChange = (p: Project, id: ChangeId) => p.history.some((h) => h.i
 export const isPlayable = (p: Project) => p.messages.some((m) => m.kind === 'buildDone')
 
 interface Saved {
-  projects: Record<string, Project>; order: string[]; answers: Answers; answersSaved: boolean; helperSkipped: boolean
-  profile?: Profile; profileSkipped?: string[]
+  projects: Record<string, Project>; order: string[]; profile?: Profile; profileSkipped?: string[]
+  /** Older saves kept the first four answers separately. */
+  answers?: Answers
+}
+
+const HELPER_OFF_KEY = 'unity-spark.helper-off'
+
+/** The first four profile questions, in the shape the rest of the app reads. */
+export function answersOf(profile: Profile): Answers {
+  const str = (v: ProfileValue | undefined) => (typeof v === 'string' ? v : '')
+  return {
+    experience: str(profile.experience) || null,
+    play: str(profile.play) || null,
+    games: str(profile.games),
+    genres: Array.isArray(profile.genres) ? profile.genres : [],
+  }
 }
 
 /** Next profile question to ask: unanswered ones in order, then ones skipped earlier (oldest skip first). */
@@ -48,6 +62,15 @@ function load(): Saved | null {
       p.future ??= []
       p.createdAt ??= p.editedAt
     }
+    // Move the first four answers from older saves into the profile.
+    const a = s.answers
+    if (a) {
+      s.profile = { ...(s.profile ?? {}) }
+      if (a.experience && !s.profile.experience) s.profile.experience = a.experience
+      if (a.play && !s.profile.play) s.profile.play = a.play
+      if (a.games.trim() && !s.profile.games) s.profile.games = a.games.trim()
+      if (a.genres.length && !s.profile.genres) s.profile.genres = a.genres
+    }
     return s
   } catch {
     return null
@@ -58,23 +81,24 @@ export function useStudio() {
   const [initial] = useState(load)
   const [projects, setProjects] = useState<Record<string, Project>>(initial?.projects ?? {})
   const [order, setOrder] = useState<string[]>(initial?.order ?? [])
-  const [answers, setAnswersState] = useState<Answers>(initial?.answers ?? EMPTY_ANSWERS)
-  const [answersSaved, setAnswersSaved] = useState(initial?.answersSaved ?? false)
-  const [helperSkipped, setHelperSkipped] = useState(initial?.helperSkipped ?? false)
   const [profile, setProfile] = useState<Profile>(initial?.profile ?? {})
+  // "Don't ask again this session": kept in sessionStorage so a reload in the same tab respects it.
+  const [helperOff, setHelperOffState] = useState(() => { try { return sessionStorage.getItem(HELPER_OFF_KEY) === '1' } catch { return false } })
+  const helperOffRef = useRef(helperOff)
+  helperOffRef.current = helperOff
+  const answers = answersOf(profile)
+  const answersSaved = answersComplete(answers)
   const [profileSkipped, setProfileSkipped] = useState<string[]>(initial?.profileSkipped ?? [])
   const profileRef = useRef({ profile, profileSkipped })
   profileRef.current = { profile, profileSkipped }
   const timers = useRef<number[]>([])
   const projectsRef = useRef(projects)
   projectsRef.current = projects
-  const helperRef = useRef({ answersSaved, helperSkipped })
-  helperRef.current = { answersSaved, helperSkipped }
 
   useEffect(() => () => timers.current.forEach(clearTimeout), [])
   useEffect(() => {
-    try { localStorage.setItem(KEY, JSON.stringify({ projects, order, answers, answersSaved, helperSkipped, profile, profileSkipped })) } catch { /* private mode */ }
-  }, [projects, order, answers, answersSaved, helperSkipped, profile, profileSkipped])
+    try { localStorage.setItem(KEY, JSON.stringify({ projects, order, profile, profileSkipped })) } catch { /* private mode */ }
+  }, [projects, order, profile, profileSkipped])
 
   const later = useCallback((fn: () => void, ms: number) => { timers.current.push(window.setTimeout(fn, ms)) }, [])
 
@@ -92,9 +116,7 @@ export function useStudio() {
   /** Ask the next profile question, but only while the user is waiting and nothing else is open. */
   const askNext = useCallback((id: string) => {
     const p = projectsRef.current[id]
-    if (!p || (p.phase !== 'building' && p.phase !== 'working')) return
-    const { answersSaved: saved, helperSkipped: skipped } = helperRef.current
-    if (p.messages.some((m) => m.kind === 'helper') && !saved && !skipped) return
+    if (!p || helperOffRef.current || (p.phase !== 'building' && p.phase !== 'working')) return
     const { profile: prof, profileSkipped: skips } = profileRef.current
     if (p.messages.some((m) => m.kind === 'ask' && !m.skipped && !isAnswered(prof[m.qid]))) return
     const q = nextQuestion(prof, skips)
@@ -103,21 +125,16 @@ export function useStudio() {
 
   // ───────── First build (ONB-104) ─────────
   const startBuild = useCallback((id: string) => {
-    const { answersSaved: saved, helperSkipped: skipped } = helperRef.current
-    const askHelper = !saved && !skipped
     update(id, (p) => ({ ...p, phase: 'building', buildStep: 0, messages: [...p.messages, { kind: 'build' }] }))
-    if (!askHelper) later(() => askNext(id), 4000)
+    // Spark Helper (ONB-110) joins while the build is running, one question at a time.
+    later(() => askNext(id), 4000)
     BUILD_STEPS.forEach((_, i) => {
-      later(() => {
-        update(id, (p) => ({ ...p, buildStep: i + 1 }))
-        // Spark Helper (ONB-110) joins while the build is running.
-        if (i === 0 && askHelper) push(id, { kind: 'helper' })
-      }, STEP_MS * (i + 1))
+      later(() => update(id, (p) => ({ ...p, buildStep: i + 1 })), STEP_MS * (i + 1))
     })
     later(() => {
       update(id, (p) => ({ ...p, phase: 'ready', messages: [...p.messages, { kind: 'buildDone' }, { kind: 'ready' }] }))
     }, STEP_MS * BUILD_STEPS.length + 500)
-  }, [askNext, later, push, update])
+  }, [askNext, later, update])
 
   const startProject = useCallback((prompt: string) => {
     const text = prompt.trim()
@@ -162,11 +179,29 @@ export function useStudio() {
   }, [later, push, reply, startBuild, update])
 
   // ───────── Spark Helper answers (ONB-110) ─────────
-  const setAnswers = useCallback((patch: Partial<Answers>) => setAnswersState((a) => ({ ...a, ...patch })), [])
-  const saveAnswers = useCallback((id?: string) => {
-    setAnswersSaved(true); setHelperSkipped(false)
-    if (id) later(() => askNext(id), 1500)
-  }, [askNext, later])
+  /** Set any of the first four answers (used by the new-chat question screen). */
+  const setAnswers = useCallback((patch: Partial<Answers>) => {
+    setProfile((p) => {
+      const next = { ...p }
+      for (const [k, v] of Object.entries(patch)) {
+        if (v === null || (typeof v === 'string' && !v.trim() && k !== 'games')) delete next[k]
+        else next[k] = v as ProfileValue
+      }
+      return next
+    })
+  }, [])
+
+  /** Spark Helper off (or back on) for the rest of this browser session. */
+  const setHelperOff = useCallback((off: boolean) => {
+    setHelperOffState(off)
+    try { if (off) sessionStorage.setItem(HELPER_OFF_KEY, '1'); else sessionStorage.removeItem(HELPER_OFF_KEY) } catch { /* private mode */ }
+  }, [])
+
+  /** "Don't ask again this session" on a question card. */
+  const dismissHelper = useCallback((id: string) => {
+    setHelperOff(true)
+    update(id, (p) => ({ ...p, messages: p.messages.map((m) => (m.kind === 'ask' && !m.skipped && !isAnswered(profileRef.current.profile[m.qid]) ? { ...m, skipped: true, off: true } : m)) }))
+  }, [setHelperOff, update])
 
   /** Save a profile answer; if Spark is still busy, follow up with the next question. */
   const answerQuestion = useCallback((qid: string, value: ProfileValue, id?: string) => {
@@ -181,7 +216,6 @@ export function useStudio() {
     update(id, (p) => ({ ...p, messages: p.messages.map((m) => (m.kind === 'ask' && m.qid === qid && !m.skipped ? { ...m, skipped: true } : m)) }))
     if (!stop) later(() => askNext(id), 800)
   }, [askNext, later, update])
-  const skipHelper = useCallback(() => setHelperSkipped(true), [])
 
   // ───────── Playing and feedback (ONB-109) ─────────
   const played = useCallback((id: string) => {
@@ -198,7 +232,7 @@ export function useStudio() {
       ? ['clearing', 'dusk', 'fox']
       : /cozy|relax|calm|night|dark/.test(lower) && !/lonely|empty|alone/.test(lower) ? ['dusk', 'fox', 'clearing'] : [...NEXT_ORDER]
     const title = /love|great|fun|nice|good/.test(lower) ? 'Nice! Here’s what I’d do next' : 'Good shout. Here’s what I’d do next'
-    const basis = helperRef.current.answersSaved ? 'Based on your feedback and favourite games' : 'Based on your feedback'
+    const basis = answersComplete(answersOf(profileRef.current.profile)) ? 'Based on your feedback and favourite games' : 'Based on your feedback'
     reply(id, () => push(id, { kind: 'next', basis, title, order }), 1200)
   }, [push, reply])
 
@@ -278,13 +312,12 @@ export function useStudio() {
 
   const reset = useCallback(() => {
     timers.current.forEach(clearTimeout)
-    setProjects({}); setOrder([]); setAnswersState(EMPTY_ANSWERS); setAnswersSaved(false); setHelperSkipped(false)
-    setProfile({}); setProfileSkipped([])
-  }, [])
+    setProjects({}); setOrder([]); setProfile({}); setProfileSkipped([]); setHelperOff(false)
+  }, [setHelperOff])
 
   return {
-    projects, order, answers, answersSaved, helperSkipped, profile, profileSkipped,
-    startProject, answerClarify, setAnswers, saveAnswers, skipHelper, answerQuestion, skipQuestion,
+    projects, order, answers, answersSaved, profile, profileSkipped, helperOff,
+    startProject, answerClarify, setAnswers, setHelperOff, dismissHelper, answerQuestion, skipQuestion,
     played, sendFeedback, applyChange, send, undoTo, redoTo, publish, reset,
   }
 }

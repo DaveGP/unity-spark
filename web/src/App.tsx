@@ -108,7 +108,8 @@ export default function App() {
         />
         <div className="main__body">
           {view.kind === 'home' && <Home name={user.name} onStart={start} />}
-          {view.kind === 'new' && <NewChat key="new" name={user.name} studio={studio} onStart={start} onSkip={() => go({ kind: 'home' })} />}
+          {view.kind === 'new' && studio.helperOff && !studio.answersSaved && <Home name={user.name} onStart={start} />}
+          {view.kind === 'new' && !(studio.helperOff && !studio.answersSaved) && <NewChat key="new" name={user.name} studio={studio} onStart={start} onSkip={() => go({ kind: 'home' })} />}
           {view.kind === 'overview' && (
             <Overview
               name={user.name} studio={studio} onStart={start}

@@ -59,7 +59,8 @@ export function Home({ name, onStart }: { name: string; onStart: (prompt: string
 
 /** New conversation: Spark Helper asks first (if it hasn't already), then drafts a starting prompt. */
 export function NewChat({ name, studio, onStart, onSkip }: { name: string; studio: Studio; onStart: (prompt: string) => void; onSkip: () => void }) {
-  const known = studio.answersSaved && answersComplete(studio.answers)
+  // Ask the first four as a set here (nothing is building yet), until "Show me ideas".
+  const [asking, setAsking] = useState(() => !(studio.answersSaved && answersComplete(studio.answers)))
   const [variant, setVariant] = useState(0)
   const [editing, setEditing] = useState(false)
   const base = draftFromAnswers(studio.answers)
@@ -67,17 +68,17 @@ export function NewChat({ name, studio, onStart, onSkip }: { name: string; studi
   const [text, setText] = useState<string | null>(null)
   const prompt = text ?? draft.prompt
 
-  if (!known) {
+  if (asking) {
     return (
       <div className="page">
         <div className="page__inner">
           <p className="eyebrow">New project</p>
           <h1 className="h1 h1--xl">Before we start, {name}…</h1>
           <p className="muted intro">A few quick questions so I can suggest ideas that fit you. You can skip and describe your own idea any time.</p>
-          <HelperQuestions large answers={studio.answers} setAnswers={studio.setAnswers} onSave={studio.saveAnswers} onSkip={() => { studio.skipHelper(); onSkip() }} />
+          <HelperQuestions large answers={studio.answers} setAnswers={studio.setAnswers} onSave={() => setAsking(false)} onSkip={onSkip} />
         </div>
         <div className="page__composer">
-          <Composer placeholder="Or skip ahead and describe your idea…" onSend={onStart} footnote="Unity Spark · Spark Helper asks these once, if you didn’t answer them during your first build" />
+          <Composer placeholder="Or skip ahead and describe your idea…" onSend={onStart} footnote="Unity Spark · Your answers are saved to your profile, so Spark won’t ask them again" />
         </div>
       </div>
     )

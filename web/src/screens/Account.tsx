@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { HelperQuestions, QuestionInput } from '../components/Chat'
+import { QuestionInput } from '../components/Chat'
 import { slug } from '../components/Modals'
 import type { User } from '../components/Shell'
-import { PROFILE_GROUPS, PROFILE_QUESTIONS, answersComplete, answersSummary, formatAnswer, isAnswered, type Project } from '../lib/flow'
+import { PROFILE_GROUPS, PROFILE_QUESTIONS, formatAnswer, isAnswered, type Project } from '../lib/flow'
 import { LOOKS } from '../lib/looks'
 import { isPlayable, versionOf, type Studio } from '../lib/useStudio'
 
@@ -21,7 +21,6 @@ export function Account({
 }) {
   const [name, setName] = useState(user.fullName)
   const [savedName, setSavedName] = useState(false)
-  const [editingPrefs, setEditingPrefs] = useState(false)
   const [editing, setEditing] = useState<string | null>(null)
   const [notify, setNotify] = useState(true)
   const [tips, setTips] = useState(true)
@@ -29,7 +28,6 @@ export function Account({
   const projects = studio.order.map((id) => studio.projects[id]).filter(Boolean) as Project[]
   const builds = projects.reduce((n, p) => n + (isPlayable(p) ? 1 : 0) + p.history.length, 0)
   const published = projects.filter((p) => p.publishedAt).length
-  const hasPrefs = studio.answersSaved && answersComplete(studio.answers)
   const answeredCount = PROFILE_QUESTIONS.filter((q) => isAnswered(studio.profile[q.id])).length
 
   const saveName = () => {
@@ -88,27 +86,19 @@ export function Account({
           <div className="acct-card__head">
             <div>
               <h2>Your profile</h2>
-              <p className="muted small">Spark Helper asks one of these whenever you’re waiting on a build or a change. Your answers guide Spark’s suggestions, ideas and how it talks to you.</p>
+              <p className="muted small">Spark Helper asks these one at a time whenever you’re waiting on a build or a change, starting with the first four. Your answers guide Spark’s suggestions, ideas and how it talks to you.</p>
             </div>
-            <span className="profile-count">{answeredCount + (hasPrefs ? 4 : 0)} of {PROFILE_QUESTIONS.length + 4}</span>
+            <span className="profile-count">{answeredCount} of {PROFILE_QUESTIONS.length}</span>
           </div>
-          <div className="progress"><span style={{ width: `${((answeredCount + (hasPrefs ? 4 : 0)) / (PROFILE_QUESTIONS.length + 4)) * 100}%` }} /></div>
-
-          <div className="profile-group">
-            <div className="profile-group__head">
-              <h3>Getting started</h3>
-              {!editingPrefs && <button className="btn btn--ghost btn--xs" onClick={() => setEditingPrefs(true)}>{hasPrefs ? 'Edit' : 'Answer now'}</button>}
+          <div className="progress"><span style={{ width: `${(answeredCount / PROFILE_QUESTIONS.length) * 100}%` }} /></div>
+          <div className="acct-row helper-toggle">
+            <div>
+              <strong>Ask questions while I wait</strong>
+              <p className="muted small">{studio.helperOff ? 'Off for this session. Spark Helper will start asking again next time you visit.' : 'On. Spark Helper asks one question during each build or change.'}</p>
             </div>
-            {editingPrefs ? (
-              <HelperQuestions
-                large badge="Your preferences" saveLabel="Save preferences" skipLabel="Cancel" note="Change these any time."
-                answers={studio.answers} setAnswers={studio.setAnswers}
-                onSave={() => { studio.saveAnswers(); setEditingPrefs(false) }}
-                onSkip={() => setEditingPrefs(false)}
-              />
-            ) : (
-              <p className="prefs">{hasPrefs ? answersSummary(studio.answers) : 'Not answered yet. Spark Helper will ask during your next build.'}</p>
-            )}
+            <button className={`btn btn--sm ${studio.helperOff ? 'btn--primary' : 'btn--ghost'}`} onClick={() => studio.setHelperOff(!studio.helperOff)}>
+              {studio.helperOff ? 'Turn back on' : 'Turn off for this session'}
+            </button>
           </div>
 
           {PROFILE_GROUPS.map((g) => (
@@ -188,7 +178,7 @@ export function Account({
               <strong>Delete all projects</strong>
               <p className="muted small">Removes every project and your Spark Helper answers from this browser.</p>
             </div>
-            <button className="btn btn--danger btn--sm" onClick={deleteAll} disabled={projects.length === 0 && !studio.answersSaved}>Delete…</button>
+            <button className="btn btn--danger btn--sm" onClick={deleteAll} disabled={projects.length === 0 && answeredCount === 0}>Delete…</button>
           </div>
         </section>
       </div>

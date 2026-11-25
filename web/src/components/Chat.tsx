@@ -138,7 +138,7 @@ export function QuestionInput({
   )
 }
 
-function AskCard({ qid, skipped, project, studio }: { qid: string; skipped?: boolean; project: Project; studio: Studio }) {
+function AskCard({ qid, skipped, off, project, studio }: { qid: string; skipped?: boolean; off?: boolean; project: Project; studio: Studio }) {
   const q = QUESTION_BY_ID[qid]
   const value = studio.profile[qid]
   if (!q) return null
@@ -152,6 +152,14 @@ function AskCard({ qid, skipped, project, studio }: { qid: string; skipped?: boo
       </div>
     )
   }
+  if (off) {
+    return (
+      <p className="fine helper-skipped">
+        Spark Helper is off for this session.{' '}
+        {studio.helperOff && <button className="link-btn" onClick={() => studio.setHelperOff(false)}>Turn it back on</button>}
+      </p>
+    )
+  }
   if (skipped) return <p className="fine helper-skipped">Spark Helper · Skipped “{q.text}” for now</p>
   const busy = project.phase === 'building' || project.phase === 'working'
   return (
@@ -163,6 +171,7 @@ function AskCard({ qid, skipped, project, studio }: { qid: string; skipped?: boo
       <div className="ask__foot">
         <button className="btn btn--text btn--xs" onClick={() => studio.skipQuestion(project.id, qid)}>Skip</button>
         <button className="btn btn--text btn--xs" onClick={() => studio.skipQuestion(project.id, qid, true)}>Not now</button>
+        <button className="btn btn--text btn--xs ask__off" onClick={() => studio.dismissHelper(project.id)}>Don’t ask again this session</button>
       </div>
     </div>
   )
@@ -257,12 +266,11 @@ export function ChatThread({
       }
 
       case 'helper':
-        if (studio.answersSaved) return <AnswersSaved answers={studio.answers} />
-        if (studio.helperSkipped) return <p className="fine helper-skipped">Spark Helper · Skipped for now. I’ll ask again before your next project.</p>
-        return <HelperQuestions answers={studio.answers} setAnswers={studio.setAnswers} onSave={() => studio.saveAnswers(p.id)} onSkip={studio.skipHelper} />
+        // Older chats had the first four questions as one card; they're now asked one at a time.
+        return studio.answersSaved ? <AnswersSaved answers={studio.answers} /> : null
 
       case 'ask':
-        return <AskCard qid={m.qid} skipped={m.skipped} project={p} studio={studio} />
+        return <AskCard qid={m.qid} skipped={m.skipped} off={m.off} project={p} studio={studio} />
 
       case 'buildDone':
         return (

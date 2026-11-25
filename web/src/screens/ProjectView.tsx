@@ -19,7 +19,7 @@ export function ProjectView({
   const p = project
   const split = p.messages.some((m) => m.kind === 'build')
   const lastSpark = [...p.messages].reverse().find((m) => m.kind !== 'user')
-  const helperOpen = p.messages.some((m) => m.kind === 'helper') && !studio.answersSaved && !studio.helperSkipped
+  const helperOpen = p.messages.some((m) => m.kind === 'ask' && !m.skipped && !(m.qid in studio.profile))
 
   // Stop the game while Spark works; play the new version when a change lands (as in the walkthrough).
   const doneCount = p.messages.filter((m) => m.kind === 'done').length

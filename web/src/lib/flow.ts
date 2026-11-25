@@ -108,7 +108,7 @@ export type Msg =
   | { kind: 'clarify' }
   | { kind: 'build' }
   | { kind: 'helper' }
-  | { kind: 'ask'; qid: string; skipped?: boolean }
+  | { kind: 'ask'; qid: string; skipped?: boolean; off?: boolean }
   | { kind: 'answersSaved' }
   | { kind: 'buildDone' }
   | { kind: 'ready' }
@@ -186,8 +186,8 @@ export function draftFromAnswers(a: Answers) {
 }
 
 // ───────────────────────── Spark Helper profile questions ─────────────────────────
-// Asked one at a time whenever the user is waiting on a build or a change, after the
-// four first-build questions above. Answers build up the user's profile over time.
+// Asked one at a time whenever the user is waiting on a build or a change. The first four
+// (ONB-110) come first; the rest build up the user's profile over later builds and changes.
 
 export type QuestionKind = 'single' | 'multi' | 'text'
 
@@ -200,10 +200,15 @@ export interface ProfileQuestion {
   placeholder?: string
 }
 
-export type ProfileGroup = 'Goals' | 'Experience' | 'Taste in games' | 'Look and style' | 'Practical' | 'Feedback style'
-export const PROFILE_GROUPS: ProfileGroup[] = ['Goals', 'Experience', 'Taste in games', 'Look and style', 'Practical', 'Feedback style']
+export type ProfileGroup = 'Getting started' | 'Goals' | 'Experience' | 'Taste in games' | 'Look and style' | 'Practical' | 'Feedback style'
+export const PROFILE_GROUPS: ProfileGroup[] = ['Getting started', 'Goals', 'Experience', 'Taste in games', 'Look and style', 'Practical', 'Feedback style']
 
 export const PROFILE_QUESTIONS: ProfileQuestion[] = [
+  { id: 'experience', group: 'Getting started', kind: 'single', text: 'How much time have you spent making games?', options: EXPERIENCE },
+  { id: 'play', group: 'Getting started', kind: 'single', text: 'How do you like to play games?', options: PLAY_STYLE },
+  { id: 'games', group: 'Getting started', kind: 'text', text: 'What are your favourite games?', placeholder: 'e.g. GTA 6, Stardew Valley' },
+  { id: 'genres', group: 'Getting started', kind: 'multi', text: 'Any genres you particularly like?', options: GENRES },
+
   { id: 'goal', group: 'Goals', kind: 'single', text: 'What would you like to get out of Spark?', options: ['Have fun making something', 'Learn how games are made', 'Prototype an idea', 'Make something to share', 'Build toward a real release'] },
   { id: 'audience', group: 'Goals', kind: 'multi', text: 'Who’s this game for?', options: ['Just me', 'Friends and family', 'My kids', 'A class or club', 'Players I don’t know yet'] },
   { id: 'platform', group: 'Goals', kind: 'multi', text: 'Where would you like people to play it?', options: ['Browser', 'Phone', 'PC', 'Console', 'Not sure yet'] },
