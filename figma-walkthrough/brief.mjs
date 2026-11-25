@@ -200,7 +200,6 @@ y = top
 {
   y += 6
   right += G('What it learns – heading',
-    eyebrow(RX, y + 10, 'Six areas, built up over time', C.helper),
     T(RX, y + 44, 'What Spark Helper learns', { size: 26, weight: 600, fill: C.text, id: 'Heading' }))
   y += 66
   const topics = [
