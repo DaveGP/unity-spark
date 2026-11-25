@@ -1,254 +1,246 @@
 // One-page feature brief (A4 portrait) in the Unity Spark style, for Figma.
-// Text in [brackets] is a placeholder to replace with the written draft.
+// Content: Spark Helper. Kept deliberately calm: few boxes, one visual per idea.
 // Run: node brief.mjs  →  out/brief.svg
 import { writeFileSync } from 'node:fs'
-import { C, T, P, R, G, tw, img, logo, eyebrow } from './lib.mjs'
+import { C, T, P, R, G, tw, logo, eyebrow } from './lib.mjs'
 
 const W = 1240
 const H = 1754
-const M = 64 // page margin
-const LX = M, LW = 680 // left column: the writing
-const RX = 784, RW = W - M - RX // right column: flow + prototype
+const M = 72 // page margin
+const GUT = 56
+const LW = 640 // left column: the argument
+const LX = M
+const RX = M + LW + GUT
+const RW = W - M - RX // right column: the visuals
 
-const ph = C.faint // placeholder text colour
 let svg = ''
-
-// ───────── Background ─────────
 svg += R(0, 0, W, H, { fill: C.bg, id: 'Background' })
-svg += `<defs><radialGradient id="brief-glow" cx=".85" cy="0" r=".7"><stop stop-color="#c4b5fd" stop-opacity=".10"/><stop offset="1" stop-color="#c4b5fd" stop-opacity="0"/></radialGradient></defs>`
-svg += R(0, 0, W, 700, { fill: 'url(#brief-glow)', id: 'Glow' })
+svg += `<defs><radialGradient id="brief-glow" cx=".9" cy="0" r=".75"><stop stop-color="#c4b5fd" stop-opacity=".09"/><stop offset="1" stop-color="#c4b5fd" stop-opacity="0"/></radialGradient></defs>`
+svg += R(0, 0, W, 760, { fill: 'url(#brief-glow)', id: 'Glow' })
 
 // ───────── Header ─────────
-let h = logo(M, 92, 22)
-h += T(W - M, 86, 'FEATURE BRIEF', { size: 10, weight: 600, fill: C.accentText, ls: 0.9, anchor: 'end', id: 'Doc type' })
-h += T(W - M, 104, '[Draft v0.1 · 25 November 2026]', { size: 11.5, fill: ph, anchor: 'end', id: 'Version and date' })
-h += eyebrow(M, 168, 'Onboarding · Unity Spark')
-const title = P(M, 180, '[Feature name]: [what it does, in one line]', 1000, { size: 40, weight: 600, lh: 48, id: 'Title', fill: C.text })
-h += title.svg
-let y = 180 + title.h + 14
-const sub = P(M, y, '[One sentence: the onboarding problem this fixes, and who it’s for.]', 980, { size: 17, lh: 26, fill: C.muted, id: 'Subtitle' })
+let h = logo(M, 100, 22)
+h += T(W - M, 100, 'FEATURE BRIEF · ONBOARDING', { size: 10, weight: 600, fill: C.muted, ls: 0.9, anchor: 'end', id: 'Doc type' })
+h += eyebrow(M, 178, 'Onboarding')
+h += T(M, 228, 'Spark Helper', { size: 46, weight: 600, id: 'Title' })
+const sub = P(M, 248, 'Quick questions, asked while Spark builds, that teach it who each user is so every suggestion fits them.', 820, { size: 18, lh: 27, fill: C.text2, id: 'Subtitle' })
 h += sub.svg
-y += sub.h + 14
-h += T(M, y + 12, '[Your name] · Product design · Unity Spark prototype', { size: 12, fill: ph, id: 'Author' })
 svg += G('Header', h)
 
-// ───────── Links to the work ─────────
-y += 42
-const links = [
-  ['Live prototype', 'davegp.github.io/unity-spark', C.accent],
-  ['Figma walkthrough v3', '21 screens · click-through prototype', C.accent],
-  ['FigJam flow', 'Current vs proposed onboarding', C.ok],
-  ['Source on GitHub', 'github.com/DaveGP/unity-spark', C.muted],
-]
-const lw = (W - 2 * M - 3 * 14) / 4
-let l = ''
-links.forEach(([label, url, dot], i) => {
-  const x = M + i * (lw + 14)
-  l += G(`Link – ${label}`,
-    R(x, y, lw, 62, { rx: 10, fill: C.card, stroke: C.line2, id: 'Card' }),
-    `<circle cx="${x + 20}" cy="${y + 24}" r="4" fill="${dot}"/>`,
-    T(x + 32, y + 28.5, label, { size: 13, weight: 600, id: 'Label' }),
-    T(x + lw - 16, y + 28.5, '↗', { size: 13, fill: C.muted, anchor: 'end', id: 'Arrow' }),
-    T(x + 20, y + 47, url, { size: 11, fill: C.muted, id: 'Where' }))
-})
-svg += G('Links to the work', l)
-y += 62 + 34
+// ───────── The idea in one picture: the build wait, filled by Spark Helper ─────────
+let y = 248 + sub.h + 44
+{
+  const x0 = M, x1 = W - M, wd = x1 - x0
+  const stages = [
+    ['First prompt', 0.0, 0.17],
+    ['First build', 0.19, 0.62, true],
+    ['Play', 0.64, 0.79],
+    ['Next steps', 0.81, 1.0],
+  ]
+  let f = ''
+  stages.forEach(([label, a, b, wait]) => {
+    const sx = x0 + a * wd, sw = (b - a) * wd
+    f += G(`Stage – ${label}`,
+      R(sx, y, sw, 44, { rx: 10, fill: wait ? C.accent : C.card, fo: wait ? 0.1 : undefined, stroke: wait ? C.accent2 : C.line2, id: 'Bar' }),
+      T(sx + 16, y + 27.5, label, { size: 13, weight: 600, fill: wait ? C.accentText : C.text2, id: 'Label' }),
+      wait ? T(sx + sw - 16, y + 27.5, 'median 8 min 50 s', { size: 12, fill: C.muted, anchor: 'end', id: 'Duration' }) : '')
+  })
+  // Spark Helper fills the wait, one question at a time.
+  const ax = x0 + 0.19 * wd, aw = 0.43 * wd
+  const qy = y + 62
+  f += `<path id="Bracket" d="M ${ax + 2} ${qy} v 8 H ${ax + aw - 2} v -8" fill="none" stroke="${C.helper}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>`
+  const dots = 5
+  for (let i = 0; i < dots; i++) {
+    const dx = ax + 30 + i * ((aw - 60) / (dots - 1))
+    f += `<circle id="Question ${i + 1}" cx="${dx}" cy="${qy + 32}" r="9" fill="${C.helper}" fill-opacity="${0.14 + i * 0.05}" stroke="${C.helper}" stroke-width="1.2"/>`
+    f += T(dx, qy + 36, '?', { size: 10.5, weight: 700, fill: C.helper, anchor: 'middle', id: 'Mark' })
+  }
+  f += T(ax + aw / 2, qy + 66, 'Spark Helper asks one question at a time while the user waits', { size: 12.5, fill: C.helper, anchor: 'middle', id: 'Caption' })
+  svg += G('Flow – where Spark Helper fits', f)
+  y = qy + 66 + 44
+}
 svg += R(M, y, W - 2 * M, 1, { fill: C.line, id: 'Divider' })
-const top = y + 36
+const top = y + 44
 
-// ───────── Left column: the brief ─────────
-const head = (n, title, hint, yy) =>
-  T(LX, yy + 14, n, { size: 11, weight: 700, fill: C.accentText, ls: 0.6, id: 'Number' })
-  + T(LX + 30, yy + 15, title, { size: 19, weight: 600, id: 'Heading' })
-  + T(LX + LW, yy + 15, hint, { size: 11, fill: ph, anchor: 'end', id: 'Length guide' })
-
-const body = (str, yy, w = LW) => P(LX, yy, str, w, { size: 14, lh: 22, fill: C.text2, id: 'Body (replace)' })
-
+// ───────── Left column: the argument ─────────
+const head = (n, title, yy) =>
+  T(LX, yy + 15, n, { size: 11, weight: 700, fill: C.accentText, ls: 0.6, id: 'Number' })
+  + T(LX + 30, yy + 16, title, { size: 20, weight: 600, id: 'Heading' })
+const HEAD = 38, GAP = 38
+const body = (str, yy, x = LX, w = LW) => P(x, yy, str, w, { size: 14.5, lh: 23, fill: C.text2, id: 'Body' })
 const bullet = (str, x, yy, w, color = C.accent) => {
-  const p = P(x + 16, yy, str, w - 16, { size: 13.5, lh: 21, fill: C.text2, id: 'Bullet (replace)' })
-  return { svg: `<circle cx="${x + 4}" cy="${yy + 10}" r="2.5" fill="${color}"/>` + p.svg, h: p.h }
+  const p = P(x + 18, yy, str, w - 18, { size: 14.5, lh: 23, fill: C.text2, id: 'Bullet' })
+  return { svg: `<circle cx="${x + 4}" cy="${yy + 11}" r="2.8" fill="${color}"/>` + p.svg, h: p.h }
 }
 
 let left = ''
 y = top
-const GAP = 40
 
 // 01 The problem
 {
-  let s = head('01', 'The problem', '2–3 sentences', y)
-  const b = body('[What’s going wrong in onboarding today: where in the flow it happens, who it affects and what it costs us. Name the moment, e.g. “new users wait a minute for their first build with nothing to do, then get generic next steps”.]', y + 34)
+  let s = head('01', 'The problem', y)
+  const b = body('Unity Spark lets anyone make the game they have in their head. We can expect a wide variety of users, from casual gamers to experienced developers. Unity Spark needs to understand every user’s interests, understanding and communication style to provide the best possible experience and keep them engaged.', y + HEAD)
   s += b.svg
   left += G('01 The problem', s)
-  y += 34 + b.h + GAP
+  y += HEAD + b.h + GAP
 }
 
 // 02 Why we think so
 {
-  let s = head('02', 'Why we think so', '3 pieces of evidence', y)
-  let yy = y + 36
-  const tags = [['Data', C.accent], ['Research', C.ok], ['Prototype', '#e9c46a']]
-  ;['[Evidence: a number from analytics, e.g. drop-off between first prompt and first play.]', '[Evidence: what users said or did in research or testing.]', '[Evidence: what building the prototype showed us.]'].forEach((t, i) => {
-    const [tag, col] = tags[i]
-    const tagW = Math.round(tw(tag, 10.5, 600) + 18)
-    s += G(`Evidence ${i + 1}`,
-      R(LX, yy, tagW, 22, { rx: 11, fill: col, fo: 0.1, stroke: col, sw: 1, id: 'Tag' }),
-      T(LX + tagW / 2, yy + 15, tag, { size: 10.5, weight: 600, fill: col, anchor: 'middle', id: 'Tag label' }),
-      P(LX + tagW + 12, yy + 2, t, LW - tagW - 12, { size: 13.5, lh: 21, fill: C.text2, id: 'Evidence (replace)' }).svg)
-    yy += 34
-  })
+  let s = head('02', 'Why we think so', y)
+  let yy = y + HEAD
+  ;[
+    'The onboarding funnel shows 38% of users abandon their project during the initial build (median 8 min 50 s), as there is nothing to keep them engaged.',
+    'User sessions show users with wildly different backgrounds and skill levels. Each type of user needs a different level of support and prompting.',
+    'AI models increasingly use memory to tailor their responses, so users increasingly expect personalisation.',
+  ].forEach((t) => { const b = bullet(t, LX, yy, LW); s += b.svg; yy += b.h + 12 })
   left += G('02 Why we think so', s)
-  y = yy - 34 + 22 + GAP
+  y = yy - 12 + GAP
 }
 
 // 03 The feature
 {
-  let s = head('03', 'The feature', '1 short paragraph', y)
-  const b = body('[What we’re building and how it fixes the problem. One paragraph: what the user sees, when it appears and why it helps.]', y + 34)
+  let s = head('03', 'The feature', y)
+  const a = body('Spark Helper is a series of questions designed to learn about the user. It asks them while the primary agent is building prototypes and making changes, keeping users engaged during these waits while building up a profile that informs future decisions across projects.', y + HEAD)
+  s += a.svg
+  const b = body('Users can check and amend their profile at any time from their account page.', y + HEAD + a.h + 12)
   s += b.svg
-  let yy = y + 34 + b.h + 16
-  const cw = (LW - 2 * 12) / 3
-  ;[['When', '[What triggers it]'], ['What they see', '[What the user is shown]'], ['What changes', '[What’s different afterwards]']].forEach(([k, v], i) => {
-    const x = LX + i * (cw + 12)
-    s += G(`Step ${i + 1} – ${k}`,
-      R(x, yy, cw, 76, { rx: 10, fill: C.card, stroke: C.line2, id: 'Card' }),
-      `<circle cx="${x + 24}" cy="${yy + 24}" r="10" fill="${C.accent}" fill-opacity=".14"/>`,
-      T(x + 24, yy + 28, String(i + 1), { size: 11, weight: 700, fill: C.accentText, anchor: 'middle', id: 'Step number' }),
-      T(x + 42, yy + 28.5, k, { size: 12.5, weight: 600, id: 'Step' }),
-      P(x + 16, yy + 42, v, cw - 32, { size: 12.5, lh: 18, fill: ph, id: 'Step detail (replace)' }).svg)
-  })
   left += G('03 The feature', s)
-  y = yy + 76 + GAP
+  y += HEAD + a.h + 12 + b.h + GAP
 }
 
-// 04 First version vs later
+// 04 Roadmap
 {
-  let s = head('04', 'What’s in the first version', 'v1 vs later', y)
-  const yy = y + 36
-  const cw = (LW - 14) / 2
-  const col = (x, title, color, items, id) => {
-    let c = R(x, yy, cw, 176, { rx: 12, fill: color === C.accent ? C.accent : C.card, fo: color === C.accent ? 0.05 : undefined, stroke: color === C.accent ? C.accent2 : C.line2, id: 'Card' })
-    c += T(x + 18, yy + 30, title, { size: 13.5, weight: 600, fill: color === C.accent ? C.accentText : C.text2, id: 'Title' })
-    let by = yy + 46
-    items.forEach((t) => { const b = bullet(t, x + 18, by, cw - 36, color); c += b.svg; by += b.h + 8 })
-    return G(id, c)
+  let s = head('04', 'Roadmap', y)
+  const yy = y + HEAD
+  const cw = (LW - 28) / 2
+  const col = (x, label, color, text) => {
+    const p = P(x, yy + 30, text, cw, { size: 14, lh: 22, fill: C.text2, id: 'Body' })
+    return { svg: R(x, yy, cw, 2, { rx: 1, fill: color, id: 'Rule' }) + T(x, yy + 22, label.toUpperCase(), { size: 10.5, weight: 600, fill: color, ls: 0.8, id: 'Label' }) + p.svg, h: 30 + p.h }
   }
-  s += col(LX, 'First version', C.accent, ['[Must-have 1]', '[Must-have 2]', '[Must-have 3]', '[Must-have 4]'], 'In v1')
-  s += col(LX + cw + 14, 'Later', C.faint, ['[Nice-to-have, and why it can wait]', '[Nice-to-have]', '[Nice-to-have]', '[Nice-to-have]'], 'Later')
-  left += G('04 First version vs later', s)
-  y = yy + 176 + GAP
+  const a = col(LX, 'First version', C.accent, 'Introduce the questions, store the answers for each user and use that data to inform recommendations.')
+  const b = col(LX + cw + 28, 'Later', C.muted, 'The AI team uses the profile to further improve the quality of responses and refine the experience for each individual.')
+  s += G('First version', a.svg) + G('Later', b.svg)
+  left += G('04 Roadmap', s)
+  y = yy + Math.max(a.h, b.h) + GAP
 }
 
 // 05 How we'll know it worked
 {
-  let s = head('05', 'How we’ll know it worked', 'metric + target', y)
-  const yy = y + 36
-  const cw = (LW - 2 * 12) / 3
-  ;[['Primary metric', '[What success looks like, e.g. % of new users who reach a playable build]', C.accent],
-    ['Leading signal', '[An early sign it’s working, e.g. % who answer Spark Helper questions]', C.ok],
-    ['Guardrail', '[What mustn’t get worse, e.g. time to first playable]', '#e9c46a']].forEach(([k, v, colr], i) => {
-    const x = LX + i * (cw + 12)
-    s += G(`Metric – ${k}`,
-      R(x, yy, cw, 140, { rx: 12, fill: C.card, stroke: C.line2, id: 'Card' }),
-      R(x, yy + 14, 3, 22, { rx: 1.5, fill: colr, id: 'Accent' }),
-      T(x + 16, yy + 30, k.toUpperCase(), { size: 10, weight: 600, fill: colr, ls: 0.8, id: 'Kind' }),
-      P(x + 16, yy + 42, v, cw - 32, { size: 12.5, lh: 18, fill: C.text2, id: 'Metric (replace)' }).svg,
-      T(x + 16, yy + 124, 'Target: [x%]', { size: 13, weight: 600, fill: C.text, id: 'Target (replace)' }))
+  let s = head('05', 'How we’ll know it worked', y)
+  const a = body('More people sticking around long enough to get something playable, and through each step of the funnel after that. We’d also expect the end result to be better suited to each user’s ideas and preferences.', y + HEAD)
+  s += a.svg
+  let px = LX
+  const py = y + HEAD + a.h + 14
+  ;[['Engagement', C.accent], ['Retention', C.accent], ['Builds reaching playable', C.ok]].forEach(([t, col]) => {
+    const w = Math.round(tw(t, 12, 600) * 1.08 + 26)
+    s += G(`Metric – ${t}`, R(px, py, w, 28, { rx: 14, fill: col, fo: 0.1, stroke: col, sw: 1, id: 'Pill' }), T(px + w / 2, py + 18.5, t, { size: 12, weight: 600, fill: col, anchor: 'middle', id: 'Label' }))
+    px += w + 8
   })
   left += G('05 How we’ll know it worked', s)
-  y = yy + 140 + GAP
+  y = py + 28 + GAP
 }
 
-// 06 Risks and open questions
-{
-  let s = head('06', 'Risks and open questions', 'optional', y)
-  let yy = y + 36
-  ;['[Risk, and how we’d reduce it]', '[Open question we’d answer with the first version]'].forEach((t) => { const b = bullet(t, LX, yy, LW, C.muted); s += b.svg; yy += b.h + 8 })
-  left += G('06 Risks and open questions', s)
-  y = yy
-}
 svg += G('Brief', left)
 const leftEnd = y
 
-// ───────── Right column: flow + prototype ─────────
+// ───────── Right column: the visuals ─────────
 let right = ''
 y = top
+// The number that matters.
 {
-  // Onboarding flow, with the focus feature highlighted.
-  const steps = [
-    ['unity.com/spark', 'Sign up and try now'],
-    ['Unity ID sign-in', 'Google, Apple, email…'],
-    ['First prompt', 'Ideas in the prompt box · ONB-102'],
-    ['Clarifying question', 'Only if the prompt is short · ONB-111'],
-    ['First build, live progress', 'Split view · ONB-104'],
-    ['Spark Helper asks', 'One question per wait · ONB-110', true],
-    ['Play and give feedback', 'How does it feel?'],
-    ['Personalised next steps', 'Ranked from the profile · ONB-109'],
-    ['Next project pitch', 'Matched to a Synty pack'],
-  ]
-  const pad = 20, nh = 40, gap = 10
-  const ch = 58 + steps.length * nh + (steps.length - 1) * gap + pad
-  let f = R(RX, y, RW, ch, { rx: 14, fill: C.surface, stroke: C.line2, id: 'Card' })
-  f += eyebrow(RX + pad, y + 30, 'The flow')
-  f += T(RX + RW - pad, y + 30, 'Proposed onboarding', { size: 11, fill: C.muted, anchor: 'end', id: 'Caption' })
-  let ny = y + 48
-  steps.forEach(([t, d, focus], i) => {
-    const x = RX + pad, w = RW - 2 * pad
-    f += G(`Step – ${t}`,
-      R(x, ny, w, nh, { rx: 9, fill: focus ? C.helper : C.card, fo: focus ? 0.08 : undefined, stroke: focus ? C.helper : C.line2, id: focus ? 'Card / Focus' : 'Card' }),
-      `<circle cx="${x + 18}" cy="${ny + nh / 2}" r="4" fill="${focus ? C.helper : C.accent}"${focus ? '' : ' fill-opacity=".7"'}/>`,
-      T(x + 32, ny + 17, t, { size: 12.5, weight: 600, fill: focus ? C.helper : C.text, id: 'Step' }),
-      T(x + 32, ny + 32, d, { size: 10.5, fill: C.muted, id: 'Detail' }),
-      focus ? G('Focus tag', R(x + w - 66, ny + 9, 54, 22, { rx: 11, fill: C.helper, id: 'Tag' }), T(x + w - 39, ny + 24, 'Focus', { size: 10.5, weight: 700, fill: '#0e2a1c', anchor: 'middle', id: 'Tag label' })) : '')
-    if (i < steps.length - 1) {
-      const ax = x + 18, a0 = ny + nh, a1 = ny + nh + gap
-      f += `<path id="Arrow" d="M ${ax} ${a0 + 2} V ${a1 - 3} M ${ax - 3.5} ${a1 - 6} L ${ax} ${a1 - 2} L ${ax + 3.5} ${a1 - 6}" fill="none" stroke="${C.line2}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>`
-    }
-    ny += nh + gap
-  })
-  right += G('Flow', f)
-  y += ch + 20
+  const ch = 168
+  right += G('Stat – build abandonment',
+    R(RX, y, RW, ch, { rx: 16, fill: C.card, stroke: C.line2, id: 'Card' }),
+    T(RX + 28, y + 92, '38%', { size: 64, weight: 600, fill: C.accent, id: 'Number' }),
+    P(RX + 28, y + 110, 'of new users abandon their project during the first build', RW - 56, { size: 14, lh: 21, fill: C.text2, id: 'Caption' }).svg)
+  y += ch + 24
 }
+// A sketch of what the user sees: one question at a time.
 {
-  // Prototype screens.
-  const pad = 20
-  const sw = RW - 2 * pad, sh = Math.round(sw * 750 / 1200)
-  // Zoomed in on the chat column, where the feature lives.
-  const shots = [
-    ['screen-09.jpg', 'Spark Helper asks while the first build runs', [0.36, 0.5]],
-    ['screen-12.jpg', 'Next steps ranked from feedback and the profile', [0.34, 0.45]],
-  ]
-  const ch = 50 + shots.length * (sh + 40) + 6
-  let p = R(RX, y, RW, ch, { rx: 14, fill: C.surface, stroke: C.line2, id: 'Card' })
-  p += eyebrow(RX + pad, y + 30, 'The prototype')
-  p += T(RX + RW - pad, y + 30, 'davegp.github.io/unity-spark', { size: 11, fill: C.muted, anchor: 'end', id: 'Caption' })
-  let sy = y + 46
-  shots.forEach(([file, cap, focus]) => {
-    p += G(`Screen – ${cap}`,
-      R(RX + pad - 1, sy - 1, sw + 2, sh + 2, { rx: 9, fill: C.line2, id: 'Border' }),
-      img(`brief/${file}`, RX + pad, sy, sw, sh, { rx: 8, layer: 'Screenshot', focus, zoom: 1.7, natural: [1200, 750] }),
-      T(RX + pad, sy + sh + 22, cap, { size: 11.5, fill: C.text2, id: 'Caption' }))
-    sy += sh + 40
+  const pad = 22
+  const iw = RW - 2 * pad
+  let yy = y + pad
+  let k = ''
+  k += `<circle cx="${RX + pad + 5}" cy="${yy + 9}" r="5" fill="${C.helper}"/>`
+  k += T(RX + pad + 16, yy + 13, 'Spark Helper', { size: 12, weight: 600, fill: C.helper, id: 'Name' })
+  const bw = Math.round(tw('While you wait', 10.5) * 1.1 + 18)
+  k += G('Badge', R(RX + pad + 112, yy - 1, bw, 20, { rx: 10, fill: C.helper, fo: 0.08, stroke: C.helper, id: 'Pill' }), T(RX + pad + 112 + bw / 2, yy + 13, 'While you wait', { size: 10.5, fill: C.helper, anchor: 'middle', id: 'Label' }))
+  yy += 38
+  k += T(RX + pad, yy, 'GOALS · PROFILE 5 OF 30', { size: 10, weight: 600, fill: C.faint, ls: 0.6, id: 'Progress' })
+  const q = P(RX + pad, yy + 10, 'What would you like to get out of Spark?', iw, { size: 15, lh: 21, weight: 600, fill: C.text, id: 'Question' })
+  k += q.svg
+  yy += 10 + q.h + 12
+  let cx = RX + pad, cy = yy
+  ;['Have fun making something', 'Learn how games are made', 'Prototype an idea', 'Make something to share'].forEach((t, i) => {
+    const w = Math.round(tw(t, 12) * 1.08 + 24)
+    if (cx + w > RX + pad + iw) { cx = RX + pad; cy += 36 }
+    const on = i === 1
+    k += G(`Chip – ${t}`, R(cx, cy, w, 28, { rx: 6, fill: on ? C.accent : C.card2, fo: on ? 0.1 : undefined, stroke: on ? C.accent2 : C.line2, id: 'Chip' }), T(cx + w / 2, cy + 18.5, t, { size: 12, fill: on ? C.accent : C.text2, anchor: 'middle', id: 'Label' }))
+    cx += w + 8
   })
-  right += G('Prototype', p)
-  y += ch
+  yy = cy + 28 + 18
+  let fx = RX + pad
+  ;['Skip', 'Not now', 'Don’t ask again this session'].forEach((t) => { k += T(fx, yy + 4, t, { size: 11.5, fill: C.muted, id: `Action – ${t}` }); fx += tw(t, 11.5) * 1.08 + 18 })
+  const ch = yy + 4 + pad - y
+  const c = R(RX, y, RW, ch, { rx: 16, fill: C.helper, fo: 0.04, stroke: C.helper, opacity: 0.45, id: 'Card' })
+  right += G('Sketch – one question at a time', c, k)
+  y += ch + 12
+  right += T(RX + 4, y + 14, 'Asked during builds and changes. Users can skip, pause or dismiss.', { size: 11.5, fill: C.muted, id: 'Sketch caption' })
+  y += 44
+}
+// What it learns.
+{
+  right += eyebrow(RX, y + 4, 'What it learns', C.muted)
+  y += 22
+  const topics = [
+    ['Goals and motivations', 'guide them to what they want to achieve'],
+    ['Experience and confidence', 'talk to them on their level'],
+    ['Taste in games', 'suggest things they’ll enjoy'],
+    ['Look and style', 'guide asset pack recommendations'],
+    ['Practical context', 'set the scope of suggestions and nudges'],
+    ['Feedback style', 'match how Spark communicates'],
+  ]
+  topics.forEach(([t, why], i) => {
+    const ry = y + i * 52
+    right += G(`Topic – ${t}`,
+      i ? R(RX, ry, RW, 1, { fill: C.line, id: 'Rule' }) : '',
+      T(RX, ry + 22, t, { size: 13.5, weight: 600, fill: C.text, id: 'Topic' }),
+      T(RX, ry + 40, `To ${why}`, { size: 12, fill: C.muted, id: 'Why' }))
+  })
+  y += topics.length * 52
+}
+// Risks sit under the visuals to balance the columns.
+{
+  y += 26
+  right += G('06 Risks',
+    R(RX, y, RW, 1, { fill: C.line, id: 'Rule' }),
+    T(RX, y + 34, '06', { size: 11, weight: 700, fill: C.accentText, ls: 0.6, id: 'Number' }),
+    T(RX + 30, y + 35, 'Risks', { size: 20, weight: 600, id: 'Heading' }),
+    P(RX, y + 54, 'Some users may find the questions annoying, so they can dismiss Spark Helper and turn it back on later from their profile.', RW, { size: 14.5, lh: 23, fill: C.text2, id: 'Body' }).svg)
+  y += 54 + 69
 }
 svg += G('Visuals', right)
+const rightEnd = y
 
-// ───────── Footer: what's been built ─────────
-let fy = Math.max(leftEnd, y) + 44
-const built = ['21-screen walkthrough', 'Clickable prototype', 'Working web app', '30-question profile', 'Personalised suggestions', '10 Synty pitches']
+// ───────── Footer: where to find the work ─────────
+const fy = H - 120
 let ft = R(M, fy, W - 2 * M, 1, { fill: C.line, id: 'Divider' })
-ft += eyebrow(M, fy + 32, 'Built so far', C.muted)
-let fx = M + 110
-built.forEach((b) => {
-  const w = Math.round(tw(b, 11.5, 500) * 1.12 + 24)
-  ft += G(`Built – ${b}`, R(fx, fy + 16, w, 26, { rx: 13, fill: C.card2, stroke: C.line2, id: 'Pill' }), T(fx + w / 2, fy + 33, b, { size: 11.5, weight: 500, fill: C.text2, anchor: 'middle', id: 'Label' }))
-  fx += w + 8
+const links = [
+  ['Prototype', 'davegp.github.io/unity-spark'],
+  ['Figma', 'Unity Spark – Onboarding walkthrough'],
+  ['FigJam', 'Onboarding flow (Testing board)'],
+  ['Code', 'github.com/DaveGP/unity-spark'],
+]
+const colW = (W - 2 * M) / links.length
+links.forEach(([k, v], i) => {
+  const x = M + i * colW
+  ft += G(`Link – ${k}`, T(x, fy + 34, k.toUpperCase(), { size: 10, weight: 600, fill: C.accentText, ls: 0.8, id: 'Kind' }), T(x, fy + 54, v, { size: 12, fill: C.text2, id: 'Where' }))
 })
-ft += T(M, H - 40, 'Unity Spark · Onboarding feature brief', { size: 11, fill: C.faint, id: 'Footer' })
-ft += T(W - M, H - 40, 'Page 1 of 1', { size: 11, fill: C.faint, anchor: 'end', id: 'Page' })
+ft += T(M, H - 34, 'Unity Spark · Spark Helper feature brief', { size: 11, fill: C.faint, id: 'Footer' })
+ft += T(W - M, H - 34, '[Your name] · 26 November 2026', { size: 11, fill: C.faint, anchor: 'end', id: 'Author' })
 svg += G('Footer', ft)
 
-const out = `<svg id="Feature brief – Onboarding (A4)" xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${svg}</svg>`
+const out = `<svg id="Feature brief – Spark Helper (A4)" xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${svg}</svg>`
 writeFileSync(new URL('./out/brief.svg', import.meta.url), out)
-console.log('out/brief.svg', (out.length / 1024).toFixed(0) + ' KB', 'left ends', leftEnd, 'right ends', y, 'footer at', fy)
+console.log('out/brief.svg', (out.length / 1024).toFixed(0) + ' KB', 'left ends', leftEnd, 'right ends', rightEnd, 'footer at', fy)
