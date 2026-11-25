@@ -59,7 +59,7 @@ export function Sidebar({
 }
 
 export function Topbar({
-  crumbs, status, onStatus, statusOn, publish, onPublish, onShare, onMenu,
+  crumbs, status, onStatus, statusOn, publish, onPublish, onShare, onExport, onMenu,
 }: {
   crumbs: ReactNode[]
   status?: string
@@ -68,6 +68,7 @@ export function Topbar({
   publish?: boolean
   onPublish?: () => void
   onShare?: () => void
+  onExport?: () => void
   onMenu: () => void
 }) {
   return (
@@ -86,6 +87,7 @@ export function Topbar({
           ? <button className={`topbar__status topbar__status--btn ${statusOn ? '' : 'is-off'}`} onClick={onStatus} title={statusOn ? 'Hide preview' : 'Show preview'}>{status}</button>
           : <span className="topbar__status">{status}</span>)}
         {publish && <button className="btn btn--primary btn--sm" onClick={onPublish}>Publish</button>}
+        <button className="btn btn--ghost btn--sm" onClick={onExport} disabled={!onExport} title={onExport ? 'Download the Unity project' : 'Export once your first playable is ready'}>↓ Export</button>
         <button className="btn btn--ghost btn--sm" onClick={onShare} disabled={!onShare}>Share</button>
       </div>
     </header>

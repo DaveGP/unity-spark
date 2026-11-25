@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react'
-import { PublishModal, PublishedModal, type Visibility } from './components/Modals'
+import { ExportModal, PublishModal, PublishedModal, type Visibility } from './components/Modals'
 import { Sidebar, Topbar, type NavTarget, type User } from './components/Shell'
 import { Account } from './screens/Account'
 import { Home, NewChat } from './screens/Home'
@@ -39,6 +39,7 @@ export default function App() {
   const [playing, setPlayingState] = useState(false)
   const [previewOpen, setPreviewOpen] = useState(true)
   const [publishing, setPublishing] = useState<Publishing | null>(null)
+  const [exporting, setExporting] = useState<string | null>(null)
   const setPlaying = useCallback((on: boolean) => setPlayingState(on), [])
 
   const go = (v: View) => { setView(v); setMenu(false); setPlayingState(false); setPreviewOpen(true) }
@@ -104,6 +105,7 @@ export default function App() {
           statusOn={previewOpen}
           onStatus={status === '◧ Split preview' ? () => setPreviewOpen((o) => !o) : undefined}
           publish={canPublish} onPublish={openPublish} onShare={openPublish}
+          onExport={current && canPublish ? () => setExporting(current.id) : undefined}
           onMenu={() => setMenu(true)}
         />
         <div className="main__body">
@@ -139,6 +141,9 @@ export default function App() {
         </div>
       </main>
 
+      {exporting && studio.projects[exporting] && (
+        <ExportModal project={studio.projects[exporting]} onClose={() => setExporting(null)} />
+      )}
       {publishing?.step === 'settings' && pubProject && (
         <PublishModal
           project={pubProject} onCancel={() => setPublishing(null)}

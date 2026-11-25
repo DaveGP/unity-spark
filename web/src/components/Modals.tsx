@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { Scene } from '../art/Scenes'
-import type { Project } from '../lib/flow'
+import { THEMES, type Project } from '../lib/flow'
+import { ProgressBar, Spinner } from './Shell'
 import { versionOf } from '../lib/useStudio'
 
 export const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
@@ -99,6 +100,70 @@ export function PublishedModal({ project, user, name, visibility, onDone, onOpen
       <div className="modal__foot">
         <span className="fine">{versionOf(project)} · Published just now</span>
         <button className="btn btn--primary btn--sm" onClick={onDone}>Done</button>
+      </div>
+    </Modal>
+  )
+}
+
+/**
+ * "Export": packs the Unity project and says it was downloaded. Prototype only — no file is
+ * actually created or downloaded.
+ */
+export function ExportModal({ project, onClose }: { project: Project; onClose: () => void }) {
+  const theme = THEMES[project.look]
+  const steps = [
+    'Collecting scenes and scripts',
+    `Bundling ${theme.pack.replace(/^the /, '')}`,
+    `Including ${project.history.length ? `${project.history.length + 1} versions of your` : 'your'} change history`,
+    'Compressing the Unity project',
+  ]
+  const [step, setStep] = useState(0)
+  useEffect(() => {
+    if (step >= steps.length) return
+    const t = window.setTimeout(() => setStep((s) => s + 1), 900 + step * 250)
+    return () => window.clearTimeout(t)
+  }, [step, steps.length])
+  const done = step >= steps.length
+  const file = `${slug(project.title)}-${versionOf(project)}.zip`
+  const size = (38 + project.history.length * 6.4 + project.title.length / 10).toFixed(1)
+
+  return (
+    <Modal onClose={onClose} className="modal--export">
+      <div className="modal__head">
+        <h2>{done ? 'Your project has been downloaded' : 'Packing up your project'}</h2>
+        <button className="modal__x" onClick={onClose} aria-label="Close">×</button>
+      </div>
+      <p className="muted">
+        {done
+          ? 'Open it in Unity Hub to keep building in the Unity Editor. Your Spark project stays here too.'
+          : `Getting ${project.title} ${versionOf(project)} ready to open in the Unity Editor.`}
+      </p>
+      {done ? (
+        <div className="export-file">
+          <span className="export-file__icon">✓</span>
+          <span>
+            <b>{file}</b>
+            <small>{size} MB · Unity 6 project · saved to Downloads</small>
+          </span>
+        </div>
+      ) : (
+        <>
+          <ul className="steps">
+            {steps.map((s, i) => (
+              <li key={s} className={i < step ? 'is-done' : i === step ? 'is-active' : ''}>
+                {i < step ? <span className="steps__icon">✓</span> : i === step ? <Spinner size={18} /> : <span className="steps__icon" />}
+                {s}
+              </li>
+            ))}
+          </ul>
+          <ProgressBar value={step / steps.length} />
+        </>
+      )}
+      <div className="modal__foot">
+        <span className="fine">{done ? 'Includes scenes, scripts, assets and your version history.' : 'This usually takes a few seconds.'}</span>
+        {done
+          ? <button className="btn btn--primary btn--sm" onClick={onClose}>Done</button>
+          : <button className="btn btn--ghost btn--sm" onClick={onClose}>Cancel</button>}
       </div>
     </Modal>
   )
