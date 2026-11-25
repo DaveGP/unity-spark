@@ -2,9 +2,11 @@ import { useRef, useState, type KeyboardEvent } from 'react'
 import { Scene } from '../art/Scenes'
 import { HelperQuestions } from '../components/Chat'
 import { Composer } from '../components/Composer'
-import { MORE_IDEAS, STARTER_IDEAS, answersComplete, draftFromAnswers } from '../lib/flow'
+import { MORE_IDEAS, STARTER_IDEAS, answersComplete } from '../lib/flow'
 import type { Studio } from '../lib/useStudio'
-import { draftNotes, dreamDraft, settingDrafts } from '../lib/personalise'
+import { draftNotes, dreamDraft } from '../lib/personalise'
+import { rankPitches, type Pitch } from '../lib/pitches'
+import type { LookId } from '../lib/looks'
 
 /** ONB-102: the first screen after sign-in, with ideas inside the empty prompt box. */
 export function Home({ name, onStart }: { name: string; onStart: (prompt: string) => void }) {
@@ -59,29 +61,23 @@ export function Home({ name, onStart }: { name: string; onStart: (prompt: string
 }
 
 /** New conversation: Spark Helper asks first (if it hasn't already), then drafts a starting prompt. */
-export function NewChat({ name, studio, onStart, onSkip }: { name: string; studio: Studio; onStart: (prompt: string) => void; onSkip: () => void }) {
+export function NewChat({ name, studio, onStart, onSkip }: {
+  name: string; studio: Studio; onStart: (prompt: string, opts?: { look?: LookId; title?: string }) => void; onSkip: () => void
+}) {
   // Ask the first four as a set here (nothing is building yet), until "Show me ideas".
   const [asking, setAsking] = useState(() => !(studio.answersSaved && answersComplete(studio.answers)))
-  const [variant, setVariant] = useState(0)
+  const [pick, setPick] = useState(0)
+  const [showMore, setShowMore] = useState(false)
   const [editing, setEditing] = useState(false)
-  // Their own idea first (if they shared one), then favourite games, then settings they like.
-  const games0 = studio.answers.games.split(',')[0]?.trim()
-  const genre0 = studio.answers.genres[0]?.replace(' / life sim', '')
-  const options = [
-    ...(dreamDraft(studio.profile) ? [{ ...dreamDraft(studio.profile)!, pill: '✦ Your own idea, from your profile', basis: 'your game idea' }] : []),
-    // The favourite-games draft only falls back to the forest hunt; skip that when a better match exists.
-    ...(draftFromAnswers(studio.answers).title !== 'Open-world firefly hunt' || !settingDrafts(studio.profile).length
-      ? [{ ...draftFromAnswers(studio.answers), pill: '✦ Drafted from your favourite games', basis: [games0, genre0, studio.answers.experience].filter(Boolean).join(' · ') }]
-      : []),
-    ...settingDrafts(studio.profile).map((d) => d.tag.startsWith('Inspired by')
-      ? { ...d, pill: '✦ Drafted from your favourite games', basis: [d.tag.replace('Inspired by ', ''), studio.answers.experience].filter(Boolean).join(' · ') }
-      : { ...d, pill: '✦ Drafted from the settings you like', basis: [d.tag.replace('Because you like ', ''), studio.answers.experience].filter(Boolean).join(' · ') }),
-    ...ALT.map((d) => ({ ...d, pill: '✦ Another idea for you', basis: [games0, genre0].filter(Boolean).join(' · ') })),
-  ].filter((d, i, all) => all.findIndex((x) => x.title === d.title) === i)
-  const draft = options[variant % options.length]
-  const notes = draftNotes(studio.profile)
   const [text, setText] = useState<string | null>(null)
-  const prompt = text ?? draft.prompt
+  // All ten Synty pitches, best fit for this profile first.
+  const ranked = rankPitches(studio.profile)
+  const current = ranked[pick % ranked.length]
+  const { pitch } = current
+  const prompt = text ?? pitch.prompt
+  const notes = draftNotes(studio.profile)
+  const dream = dreamDraft(studio.profile)
+  const choose = (i: number) => { setPick(i); setText(null); setEditing(false); window.scrollTo?.(0, 0); document.querySelector('.page__inner')?.scrollTo({ top: 0, behavior: 'smooth' }) }
 
   if (asking) {
     return (
@@ -93,7 +89,7 @@ export function NewChat({ name, studio, onStart, onSkip }: { name: string; studi
           <HelperQuestions large answers={studio.answers} setAnswers={studio.setAnswers} onSave={() => setAsking(false)} onSkip={onSkip} />
         </div>
         <div className="page__composer">
-          <Composer placeholder="Or skip ahead and describe your idea…" onSend={onStart} footnote="Unity Spark · Your answers are saved to your profile, so Spark won’t ask them again" />
+          <Composer placeholder="Or skip ahead and describe your idea…" onSend={(t) => onStart(t)} footnote="Unity Spark · Your answers are saved to your profile, so Spark won’t ask them again" />
         </div>
       </div>
     )
@@ -104,63 +100,81 @@ export function NewChat({ name, studio, onStart, onSkip }: { name: string; studi
       <div className="page__inner">
         <p className="eyebrow">New project</p>
         <h1 className="h1 h1--xl">What’s next, {name}?</h1>
-        <p className="muted intro">I’ve drafted a starting point from the games you told me you love. Send it as it is, or change anything first.</p>
+        <p className="muted intro">I’ve picked a starting point from what you’ve told me, built around a Synty asset pack. Send it as it is, change anything first, or see more options.</p>
 
         <div className="prompt-box is-typing">
-          <span className="pill pill--helper">{draft.pill}</span>
+          <span className="pill pill--helper">{current.tag.startsWith('Inspired') ? '✦ Drafted from your favourite games' : current.tag.startsWith('Because') ? '✦ Drafted from what you like' : '✦ An idea to try'}</span>
           {editing
             ? <textarea rows={3} value={prompt} autoFocus onChange={(e) => setText(e.target.value)} />
             : <p className="prompt-box__draft">{prompt}</p>}
           <div className="prompt-box__row">
             <div className="chips chips--tight">
-              <button className="chip" onClick={() => { setVariant((v) => v + 1); setText(null); setEditing(false) }}>↻ Another idea</button>
+              <button className="chip" onClick={() => choose(pick + 1)}>↻ Another idea</button>
               <button className={`chip ${editing ? 'chip--on' : ''}`} onClick={() => setEditing((e) => !e)}>✎ Edit the prompt</button>
             </div>
-            <button className="btn btn--primary btn--sm" onClick={() => onStart(prompt)}>Send</button>
+            <button className="btn btn--primary btn--sm" onClick={() => onStart(prompt, { look: pitch.look, title: pitch.title })}>Send</button>
           </div>
         </div>
-        <p className="fine footnote">Unity Spark · Ideas use what you shared during your first build</p>
+        <p className="fine footnote">Unity Spark · Ideas use what you’ve shared with Spark Helper</p>
 
         <h2 className="section-title">Why this idea</h2>
         <div className="why-card">
           <div className="why-card__img">
-            <img src={draft.image} alt="" />
-            <span className="tag">{draft.tag}</span>
+            <PackImage pitch={pitch} />
+            <span className="tag">{current.tag}</span>
           </div>
           <div className="why-card__body">
-            <h3>{draft.title}</h3>
-            <p className="muted small">{[draft.meta, ...notes].join(' · ')}</p>
-            <p>{draft.why}</p>
-            <span className="pill pill--helper">Based on: {draft.basis}</span>
+            <h3>{pitch.title}</h3>
+            <p className="muted small">{['Synty ' + pitch.pack.replace('POLYGON ', 'POLYGON – '), 'Low-poly 3D', ...notes].join(' · ')}</p>
+            <p>{current.why}</p>
+            <div className="why-card__foot">
+              {current.basis.length > 0 && <span className="pill pill--helper">Based on: {current.basis.join(' · ')}</span>}
+              <a className="pack-link" href={pitch.packUrl} target="_blank" rel="noreferrer">View {pitch.pack} ↗</a>
+            </div>
           </div>
         </div>
 
-        <h2 className="section-title">More ideas for you</h2>
-        <div className="chips">
-          {MORE_FOR_YOU.map((m) => <button key={m.label} className="chip" onClick={() => onStart(m.prompt)}>✦ {m.label}</button>)}
+        {dream && (
+          <button className="own-idea" onClick={() => onStart(dream.prompt, { look: dream.look, title: dream.title })}>
+            <span>✦ Or start from your own idea</span>
+            <b>“{dream.prompt.replace(/\.$/, '')}”</b>
+          </button>
+        )}
+
+        <div className="section-row">
+          <h2 className="section-title">More options</h2>
+          <button className="btn btn--ghost btn--xs" onClick={() => setShowMore((s) => !s)}>{showMore ? 'Hide options' : `Show ${ranked.length - 1} more ideas`}</button>
         </div>
+        {showMore && (
+          <div className="pitch-grid">
+            {ranked.map((r, i) => (i === pick % ranked.length ? null : (
+              <button key={r.pitch.id} className="pitch-card" onClick={() => choose(i)}>
+                <div className="pitch-card__img"><PackImage pitch={r.pitch} /></div>
+                <div className="pitch-card__body">
+                  <strong>{r.pitch.title}</strong>
+                  <span className="pitch-card__pack">{r.pitch.pack}</span>
+                  <p>{r.pitch.blurb}</p>
+                  {r.basis.length > 0 && <span className="pitch-card__why">{r.tag}</span>}
+                </div>
+              </button>
+            )))}
+          </div>
+        )}
       </div>
     </div>
   )
 }
 
-const ALT = [
-  {
-    title: 'Getaway driving challenge', tag: 'Based on your answers', image: 'assets/palm-city.jpg', look: 'city' as const,
-    meta: 'Synty POLYGON – Palm City · Low-poly 3D · Racing',
-    prompt: 'A getaway driving game through a sunny coastal city. Lose the police, weave through traffic and reach the safehouse before the timer runs out.',
-    why: 'A smaller slice of the open-world city feel you like: one car, one city, and a clear goal for a first project.',
-  },
-  {
-    title: 'Cozy valley farm', tag: 'Inspired by Stardew Valley', image: 'assets/next-dusk.jpg', look: 'woodland' as const,
-    meta: 'Stylized 3D · Cozy / life sim',
-    prompt: 'A cozy farming game in a small valley. Plant crops, befriend the villagers and decorate a little cottage through the seasons.',
-    why: 'You like relaxed play, so this keeps the gentle routine of tending a farm, sized for a first project.',
-  },
-]
-
-const MORE_FOR_YOU = [
-  { label: 'Cozy farm life sim (like Stardew Valley)', prompt: 'A cozy farming game in a small valley. Plant crops, befriend the villagers and decorate a little cottage through the seasons.' },
-  { label: 'Open-world firefly hunt', prompt: 'An open-world exploration game across floating forest islands, collecting rare fireflies and unlocking new areas as you go.' },
-  { label: 'Getaway driving challenge', prompt: 'A getaway driving game through a sunny coastal city. Lose the police, weave through traffic and reach the safehouse before the timer runs out.' },
-]
+/** The pack's store image, or a labelled placeholder tile if the image isn't available yet. */
+function PackImage({ pitch }: { pitch: Pitch }) {
+  const [failed, setFailed] = useState(false)
+  if (failed) {
+    return (
+      <div className={`pack-tile pack-tile--${pitch.look}`}>
+        <span>Synty</span>
+        <b>{pitch.pack}</b>
+      </div>
+    )
+  }
+  return <img src={pitch.image} alt={`${pitch.pack} asset pack`} onError={() => setFailed(true)} />
+}

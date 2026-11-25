@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { recommendLook } from './looks'
+import { recommendLook, type LookId } from './looks'
 import { persona, rankNextSteps, say } from './personalise'
 import {
   BUILD_STEPS, LEGACY_CHANGE_IDS, NEXT_ORDER, changeByTitle, changesFor, PROFILE_QUESTIONS, answersComplete, isAnswered, isShortPrompt, titleFor,
@@ -142,12 +142,12 @@ export function useStudio() {
     }, STEP_MS * BUILD_STEPS.length + 500)
   }, [askNext, later, update])
 
-  const startProject = useCallback((prompt: string) => {
+  const startProject = useCallback((prompt: string, opts: { look?: LookId; title?: string } = {}) => {
     const text = prompt.trim()
     if (!text) return null
     const id = uid()
     const project: Project = {
-      id, title: titleFor(text), prompt: text, look: recommendLook(text),
+      id, title: opts.title ?? titleFor(text), prompt: text, look: opts.look ?? recommendLook(text),
       messages: [{ kind: 'user', text }], phase: 'clarify', buildStep: 0, workStep: 0,
       history: [], future: [], playedOnce: false, thinking: false, publishedAt: null, editedAt: Date.now(), createdAt: Date.now(),
     }

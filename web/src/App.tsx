@@ -7,6 +7,7 @@ import { Overview, PlayLatest } from './screens/Overview'
 import { ProjectView } from './screens/ProjectView'
 import { Landing, UnitySignIn } from './screens/Unity'
 import { isPlayable, useStudio, versionOf } from './lib/useStudio'
+import type { LookId } from './lib/looks'
 
 const KEY = 'unity-spark.user'
 
@@ -65,8 +66,8 @@ export default function App() {
     go({ kind: 'home' })
   }
 
-  const start = (prompt: string) => {
-    const id = studio.startProject(prompt)
+  const start = (prompt: string, opts?: { look?: LookId; title?: string }) => {
+    const id = studio.startProject(prompt, opts)
     if (id) go({ kind: 'project', id })
   }
 

@@ -707,3 +707,36 @@ button.chip--accent:hover { background: #d3c7ff; color: var(--accent-ink); borde
 .nudge { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; padding: 10px 12px; border: 1px solid rgba(196, 181, 253, 0.35); background: rgba(196, 181, 253, 0.06); border-radius: 8px; font-size: 12px; color: var(--text-2); }
 .nudge b { color: var(--text); font-weight: 600; }
 .suggest__why { font-size: 11px; color: var(--ok); }
+
+/* Synty pitches on the new-chat screen */
+.why-card__foot { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-top: auto; }
+.why-card__foot .pill { margin-top: 0; }
+.pack-link { font-size: 12px; color: var(--accent-text); }
+.pack-link:hover { text-decoration: underline; }
+.own-idea {
+  display: grid; gap: 4px; width: 100%; text-align: left; margin-top: 16px; padding: 12px 16px; border-radius: 10px;
+  background: rgba(122, 214, 166, 0.05); border: 1px dashed rgba(122, 214, 166, 0.4); color: var(--text-2); font-size: 12px;
+}
+.own-idea span { color: var(--ok); font-weight: 500; }
+.own-idea b { font-weight: 500; color: var(--text); font-size: 13px; }
+.own-idea:hover { background: rgba(122, 214, 166, 0.09); }
+.pitch-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.pitch-card {
+  text-align: left; padding: 0; overflow: hidden; display: flex; flex-direction: column; background: var(--card);
+  border: 1px solid var(--line-2); border-radius: 10px; transition: border-color 0.15s, transform 0.15s;
+}
+.pitch-card:hover { border-color: var(--accent-2); transform: translateY(-1px); }
+.pitch-card__img { height: 110px; background: var(--card-2); }
+.pitch-card__img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.pitch-card__body { padding: 12px 14px 14px; display: grid; gap: 3px; }
+.pitch-card__body strong { font-size: 13.5px; }
+.pitch-card__pack { font-size: 11px; color: var(--accent-text); }
+.pitch-card__body p { font-size: 12px; color: var(--muted); line-height: 1.4; margin-top: 2px; }
+.pitch-card__why { font-size: 11px; color: var(--ok); margin-top: 4px; }
+.pack-tile { width: 100%; height: 100%; display: grid; place-content: center; text-align: center; gap: 4px; padding: 12px; }
+.pack-tile span { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.7); }
+.pack-tile b { font-size: 15px; font-weight: 600; color: #fff; }
+.pack-tile--woodland { background: linear-gradient(135deg, #3f7a4a, #a9cf8e); }
+.pack-tile--orbital { background: linear-gradient(135deg, #1b1f3a, #5b4a9c); }
+.pack-tile--city { background: linear-gradient(135deg, #e8806b, #e9c46a); }
+@media (max-width: 900px) { .pitch-grid { grid-template-columns: 1fr; } }
