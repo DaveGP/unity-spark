@@ -20,7 +20,7 @@ svg += R(0, 0, W, 760, { fill: 'url(#brief-glow)', id: 'Glow' })
 
 // ───────── Header ─────────
 let h = logo(M, 88, 22)
-h += T(W - M, 88, 'FEATURE BRIEF · ONBOARDING', { size: 10, weight: 600, fill: C.muted, ls: 0.9, anchor: 'end', id: 'Doc type' })
+h += T(W - M, 88, 'FEATURE BRIEF · UNITY SPARK', { size: 10, weight: 600, fill: C.muted, ls: 0.9, anchor: 'end', id: 'Doc type' })
 h += eyebrow(M, 160, 'Onboarding')
 h += T(M, 210, 'Spark Assist', { size: 46, weight: 600, id: 'Title' })
 const sub = P(M, 230, 'Quick questions, asked while Spark builds. Spark Assist invites each user to tell us who they are. Every suggestion fits them, not our assumptions.', 820, { size: 18, lh: 27, fill: C.text2, id: 'Subtitle' })
