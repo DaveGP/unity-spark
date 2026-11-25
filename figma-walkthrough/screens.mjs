@@ -255,7 +255,7 @@ export function s07() {
   return appShell('ONB-104 – Show progress during first generation', { recent: PROJECT, active: 'recent', crumbs: [PROJECT], status: '◧ Split preview' }, splitChat(c) + buildingPanel(2))
 }
 
-// What the user told Spark Helper (ONB-110). Reused wherever Spark explains a suggestion.
+// What the user told Spark Assist (ONB-110). Reused wherever Spark explains a suggestion.
 const ANSWERS = { experience: 'Just starting out', play: 'Relaxed', games: 'GTA 6, Stardew Valley', genres: 'Open world, Cozy' }
 
 export function s08() {
@@ -279,7 +279,7 @@ export function s08() {
   h += T(x, y + 456, 'Answers shape your next steps and future project ideas.', { size: 11, fill: C.faint })
   h += btn(x, y + 468, 'Skip for now', { variant: 'ghost', h: 28, size: 11.5 }).svg
   h += T(SX + SW - 16, y + 487, 'Question 4 of 4', { size: 11, fill: C.faint, anchor: 'end' })
-  c += G('Message / Spark Helper – ONB-110 preferences', h)
+  c += G('Message / Spark Assist – ONB-110 preferences', h)
   return appShell('ONB-110 – Secondary agent asks preferences during build', { recent: PROJECT, active: 'recent', crumbs: [PROJECT], status: '◧ Split preview' }, splitChat(c, 'Answer, or describe a change…') + buildingPanel(3))
 }
 
@@ -310,7 +310,7 @@ function readyChat() {
   const p = priorChat()
   let y = p.h + 24
   let c = p.svg
-  c += G('Message / Spark Helper – Answers saved', R(SX, y, SW, 80, { rx: 10, fill: C.helper, fo: 0.04, stroke: C.helper, opacity: 0.35, id: 'Card' }), sparkHeader(SX + 14, y + 26, '', { helper: true, badge: 'Answers saved' }), P(SX + 14, y + 38, `${ANSWERS.experience} · ${ANSWERS.play} · Loves ${ANSWERS.games} · ${ANSWERS.genres}`, SW - 28, { size: 11.5, fill: C.text2, lh: 17 }).svg)
+  c += G('Message / Spark Assist – Answers saved', R(SX, y, SW, 80, { rx: 10, fill: C.helper, fo: 0.04, stroke: C.helper, opacity: 0.35, id: 'Card' }), sparkHeader(SX + 14, y + 26, '', { helper: true, badge: 'Answers saved' }), P(SX + 14, y + 38, `${ANSWERS.experience} · ${ANSWERS.play} · Loves ${ANSWERS.games} · ${ANSWERS.genres}`, SW - 28, { size: 11.5, fill: C.text2, lh: 17 }).svg)
   y += 92
   c += G('Build complete', R(SX, y, SW, 44, { rx: 10, fill: C.card, stroke: C.line2 }), `<circle cx="${SX + 22}" cy="${y + 22}" r="9" fill="${C.accent}"/>`, T(SX + 22, y + 26, '✓', { size: 10, weight: 700, fill: C.accentInk, anchor: 'middle' }), T(SX + 40, y + 27, 'Built in 58s · 6 of 6 steps', { size: 12.5, fill: C.text2 }))
   y += 72
@@ -520,7 +520,7 @@ export function s15() {
   return frame('15 · Publish – Game is live', publishBackdrop() + R(0, 0, W, H, { fill: C.scrim, fo: 0.7, id: 'Scrim' }) + G('Modal / Published', m))
 }
 
-// New conversation, before any prompt: Spark Helper asks the ONB-110 questions up front
+// New conversation, before any prompt: Spark Assist asks the ONB-110 questions up front
 // (the ones it would otherwise ask while the first project builds).
 export function sNewChatQuestions() {
   let b = eyebrow(FX, 120, 'New project')
@@ -543,9 +543,9 @@ export function sNewChatQuestions() {
   h += btn(FX + FW - 24 - go.w, y + 410, 'Show me ideas', { h: 36, id: 'Button / Show me ideas (to drafted prompt)' }).svg
   const skip = btn(0, 0, 'Skip for now', { variant: 'ghost', h: 36 })
   h += btn(FX + FW - 24 - go.w - 10 - skip.w, y + 410, 'Skip for now', { variant: 'ghost', h: 36 }).svg
-  b += G('Message / Spark Helper – Questions before a new project', h)
-  b += composer(FX, 790, FW, { placeholder: 'Or skip ahead and describe your idea…', foot: 'Unity Spark · Spark Helper asks these once, if you didn’t answer them during your first build' })
-  return appShell('New conversation – Spark Helper asks questions first', { recent: ['New conversation', PROJECT], active: 'recent', crumbs: ['New conversation'] }, b)
+  b += G('Message / Spark Assist – Questions before a new project', h)
+  b += composer(FX, 790, FW, { placeholder: 'Or skip ahead and describe your idea…', foot: 'Unity Spark · Spark Assist asks these once, if you didn’t answer them during your first build' })
+  return appShell('New conversation – Spark Assist asks questions first', { recent: ['New conversation', PROJECT], active: 'recent', crumbs: ['New conversation'] }, b)
 }
 
 // A fresh conversation that opens with a prompt drafted from the ONB-110 answers.

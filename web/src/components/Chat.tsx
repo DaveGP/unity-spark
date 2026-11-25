@@ -8,7 +8,7 @@ import { STEP_MS, type Studio } from '../lib/useStudio'
 import { howItWorks, persona, say, tweaks, unityFiles } from '../lib/personalise'
 import { ProgressBar, SparkHeader, Spinner, Steps } from './Shell'
 
-// ───────────────────────── Spark Helper questions (ONB-110) ─────────────────────────
+// ───────────────────────── Spark Assist questions (ONB-110) ─────────────────────────
 
 export function HelperQuestions({
   answers, setAnswers, onSave, onSkip, large, badge, saveLabel = 'Show me ideas', skipLabel = 'Skip for now', note,
@@ -155,12 +155,12 @@ function AskCard({ qid, skipped, off, project, studio }: { qid: string; skipped?
   if (off) {
     return (
       <p className="fine helper-skipped">
-        Spark Helper is off for this session.{' '}
+        Spark Assist is off for this session.{' '}
         {studio.helperOff && <button className="link-btn" onClick={() => studio.setHelperOff(false)}>Turn it back on</button>}
       </p>
     )
   }
-  if (skipped) return <p className="fine helper-skipped">Spark Helper · Skipped “{q.text}” for now</p>
+  if (skipped) return <p className="fine helper-skipped">Spark Assist · Skipped “{q.text}” for now</p>
   const busy = project.phase === 'building' || project.phase === 'working'
   return (
     <div className="helper ask">

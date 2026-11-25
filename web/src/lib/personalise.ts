@@ -1,4 +1,4 @@
-// Turns Spark Helper's profile answers into decisions the rest of the app uses:
+// Turns Spark Assist's profile answers into decisions the rest of the app uses:
 // which next step to suggest first (and why), how Spark talks, how much it shows,
 // whether it teaches, and which new projects and nudges to offer.
 // Every rule only kicks in once the relevant question has been answered.
@@ -160,7 +160,7 @@ const SETTING_DRAFTS: Record<string, Draft> = {
   },
 }
 
-/** A drafted prompt from their own long-standing game idea, if they told Spark Helper about one. */
+/** A drafted prompt from their own long-standing game idea, if they told Spark Assist about one. */
 export function dreamDraft(p: Profile): Draft | null {
   const idea = str(p.dream).trim()
   if (!idea) return null
@@ -174,7 +174,7 @@ export function dreamDraft(p: Profile): Draft | null {
     title: words.charAt(0).toUpperCase() + words.slice(1), tag: 'Your idea', image, look,
     meta: 'From your profile · Stylized 3D',
     prompt: /[.!?]$/.test(prompt) ? prompt : `${prompt}.`,
-    why: 'You told Spark Helper you’ve wanted to make this for a while. Here’s a first version to start from: send it as it is or add details.',
+    why: 'You told Spark Assist you’ve wanted to make this for a while. Here’s a first version to start from: send it as it is or add details.',
   }
 }
 

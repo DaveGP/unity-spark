@@ -11,7 +11,7 @@ import {
  * so a real model can be dropped in later by replacing the bodies of these actions.
  */
 
-// ~58s first build, so there's real time to answer Spark Helper while it runs.
+// ~58s first build, so there's real time to answer Spark Assist while it runs.
 export const STEP_MS = 9500
 export const WORK_MS = 3000
 const KEY = 'unity-spark.studio'
@@ -118,7 +118,7 @@ export function useStudio() {
     later(() => { update(id, (p) => ({ ...p, thinking: false })); fn() }, ms)
   }, [later, update])
 
-  // ───────── Spark Helper: one profile question per wait ─────────
+  // ───────── Spark Assist: one profile question per wait ─────────
   /** Ask the next profile question, but only while the user is waiting and nothing else is open. */
   const askNext = useCallback((id: string) => {
     const p = projectsRef.current[id]
@@ -132,7 +132,7 @@ export function useStudio() {
   // ───────── First build (ONB-104) ─────────
   const startBuild = useCallback((id: string) => {
     update(id, (p) => ({ ...p, phase: 'building', buildStep: 0, messages: [...p.messages, { kind: 'build' }] }))
-    // Spark Helper (ONB-110) joins while the build is running, one question at a time.
+    // Spark Assist (ONB-110) joins while the build is running, one question at a time.
     later(() => askNext(id), 4000)
     BUILD_STEPS.forEach((_, i) => {
       later(() => update(id, (p) => ({ ...p, buildStep: i + 1 })), STEP_MS * (i + 1))
@@ -194,7 +194,7 @@ export function useStudio() {
     })
   }, [later, push, reply, startBuild, update])
 
-  // ───────── Spark Helper answers (ONB-110) ─────────
+  // ───────── Spark Assist answers (ONB-110) ─────────
   /** Set any of the first four answers (used by the new-chat question screen). */
   const setAnswers = useCallback((patch: Partial<Answers>) => {
     setProfile((p) => {
@@ -207,7 +207,7 @@ export function useStudio() {
     })
   }, [])
 
-  /** Spark Helper off (or back on) for the rest of this browser session. */
+  /** Spark Assist off (or back on) for the rest of this browser session. */
   const setHelperOff = useCallback((off: boolean) => {
     setHelperOffState(off)
     try { if (off) sessionStorage.setItem(HELPER_OFF_KEY, '1'); else sessionStorage.removeItem(HELPER_OFF_KEY) } catch { /* private mode */ }

@@ -1,5 +1,5 @@
 // One-page feature brief (A4 portrait) in the Unity Spark style, for Figma.
-// Content: Spark Helper. Kept deliberately calm: few boxes, one visual per idea.
+// Content: Spark Assist. Kept deliberately calm: few boxes, one visual per idea.
 // Run: node brief.mjs  →  out/brief.svg
 import { writeFileSync } from 'node:fs'
 import { C, T, P, R, G, tw, logo, eyebrow } from './lib.mjs'
@@ -22,12 +22,12 @@ svg += R(0, 0, W, 760, { fill: 'url(#brief-glow)', id: 'Glow' })
 let h = logo(M, 100, 22)
 h += T(W - M, 100, 'FEATURE BRIEF · ONBOARDING', { size: 10, weight: 600, fill: C.muted, ls: 0.9, anchor: 'end', id: 'Doc type' })
 h += eyebrow(M, 178, 'Onboarding')
-h += T(M, 228, 'Spark Helper', { size: 46, weight: 600, id: 'Title' })
-const sub = P(M, 248, 'Quick questions, asked while Spark builds. Spark Helper invites each user to tell us who they are. Every suggestion fits them, not our assumptions.', 820, { size: 18, lh: 27, fill: C.text2, id: 'Subtitle' })
+h += T(M, 228, 'Spark Assist', { size: 46, weight: 600, id: 'Title' })
+const sub = P(M, 248, 'Quick questions, asked while Spark builds. Spark Assist invites each user to tell us who they are. Every suggestion fits them, not our assumptions.', 820, { size: 18, lh: 27, fill: C.text2, id: 'Subtitle' })
 h += sub.svg
 svg += G('Header', h)
 
-// ───────── The idea in one picture: the build wait, filled by Spark Helper ─────────
+// ───────── The idea in one picture: the build wait, filled by Spark Assist ─────────
 let y = 248 + sub.h + 44
 {
   const x0 = M, x1 = W - M, wd = x1 - x0
@@ -62,9 +62,9 @@ let y = 248 + sub.h + 44
   const [cx, cw] = pos['Changes']
   f += bracket(cx, cw, 'Bracket – changes')
   for (let i = 0; i < 2; i++) f += mark(cx + m + i * d, i + 1)
-  f += T(ax + aw / 2, qy + 66, 'Spark Helper asks one question at a time while the user waits', { size: 12.5, fill: C.helper, anchor: 'middle', id: 'Caption' })
+  f += T(ax + aw / 2, qy + 66, 'Spark Assist asks one question at a time while the user waits', { size: 12.5, fill: C.helper, anchor: 'middle', id: 'Caption' })
   f += T(cx + cw / 2, qy + 66, 'Additional questions', { size: 12.5, fill: C.helper, anchor: 'middle', id: 'Caption – changes' })
-  svg += G('Flow – where Spark Helper fits', f)
+  svg += G('Flow – where Spark Assist fits', f)
   y = qy + 66 + 34
 }
 svg += R(M, y, W - 2 * M, 1, { fill: C.line, id: 'Divider' })
@@ -109,7 +109,7 @@ y = top
 // 03 The feature
 {
   let s = head('03', 'The feature', y)
-  const a = body('Spark Helper is a series of questions designed to learn about the user. It asks them while the primary agent is building prototypes and making changes, keeping users engaged during these waits while building up a profile that informs future decisions across projects. Users can check and amend their profile at any time from their account page.', y + HEAD)
+  const a = body('Spark Assist is a series of questions designed to learn about the user. It asks them while the primary agent is building prototypes and making changes, keeping users engaged during these waits while building up a profile that informs future decisions across projects. Users can check and amend their profile at any time from their account page.', y + HEAD)
   s += a.svg
   left += G('03 The feature', s)
   y += HEAD + a.h + GAP
@@ -150,7 +150,7 @@ y = top
 // 06 Risks
 {
   let s = head('06', 'Risks', y)
-  const a = body('Some users may find the questions annoying, so they can dismiss Spark Helper and turn it back on later from their profile.', y + HEAD)
+  const a = body('Some users may find the questions annoying, so they can dismiss Spark Assist and turn it back on later from their profile.', y + HEAD)
   s += a.svg
   left += G('06 Risks', s)
   y += HEAD + a.h
@@ -178,7 +178,7 @@ y = top
   let yy = y + pad
   let k = ''
   k += `<circle cx="${RX + pad + 5}" cy="${yy + 9}" r="5" fill="${C.helper}"/>`
-  k += T(RX + pad + 16, yy + 13, 'Spark Helper', { size: 12, weight: 600, fill: C.helper, id: 'Name' })
+  k += T(RX + pad + 16, yy + 13, 'Spark Assist', { size: 12, weight: 600, fill: C.helper, id: 'Name' })
   const bw = Math.round(tw('While you wait', 10.5) * 1.1 + 18)
   k += G('Badge', R(RX + pad + 112, yy - 1, bw, 20, { rx: 10, fill: C.helper, fo: 0.08, stroke: C.helper, id: 'Pill' }), T(RX + pad + 112 + bw / 2, yy + 13, 'While you wait', { size: 10.5, fill: C.helper, anchor: 'middle', id: 'Label' }))
   yy += 38
@@ -208,7 +208,7 @@ y = top
 {
   y += 6
   right += G('What it learns – heading',
-    T(RX, y + 44, 'What Spark Helper learns', { size: 26, weight: 600, fill: C.text, id: 'Heading' }))
+    T(RX, y + 44, 'What Spark Assist learns', { size: 26, weight: 600, fill: C.text, id: 'Heading' }))
   y += 66
   const topics = [
     ['Goals and motivations', 'guide them to what they want to achieve'],
@@ -246,10 +246,10 @@ links.forEach(([k, v], i) => {
   const x = M + i * colW
   ft += G(`Link – ${k}`, T(x, fy + 34, k.toUpperCase(), { size: 10, weight: 600, fill: C.accentText, ls: 0.8, id: 'Kind' }), T(x, fy + 54, v, { size: 12, fill: C.text2, id: 'Where' }))
 })
-ft += T(M, H - 34, 'Unity Spark · Spark Helper feature brief', { size: 11, fill: C.faint, id: 'Footer' })
+ft += T(M, H - 34, 'Unity Spark · Spark Assist feature brief', { size: 11, fill: C.faint, id: 'Footer' })
 ft += T(W - M, H - 34, 'David Pearson · 26 November 2026', { size: 11, fill: C.faint, anchor: 'end', id: 'Author' })
 svg += G('Footer', ft)
 
-const out = `<svg id="Feature brief – Spark Helper (A4)" xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${svg}</svg>`
+const out = `<svg id="Feature brief – Spark Assist (A4)" xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${svg}</svg>`
 writeFileSync(new URL('./out/brief.svg', import.meta.url), out)
 console.log('out/brief.svg', (out.length / 1024).toFixed(0) + ' KB', 'left ends', leftEnd, 'right ends', rightEnd, 'footer at', fy)

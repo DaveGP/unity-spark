@@ -60,7 +60,7 @@ export function Home({ name, onStart }: { name: string; onStart: (prompt: string
   )
 }
 
-/** New conversation: Spark Helper asks first (if it hasn't already), then drafts a starting prompt. */
+/** New conversation: Spark Assist asks first (if it hasn't already), then drafts a starting prompt. */
 export function NewChat({ name, studio, onStart, onSkip }: {
   name: string; studio: Studio; onStart: (prompt: string, opts?: { look?: LookId; title?: string }) => void; onSkip: () => void
 }) {
@@ -115,7 +115,7 @@ export function NewChat({ name, studio, onStart, onSkip }: {
             <button className="btn btn--primary btn--sm" onClick={() => onStart(prompt, { look: pitch.look, title: pitch.title })}>Send</button>
           </div>
         </div>
-        <p className="fine footnote">Unity Spark · Ideas use what you’ve shared with Spark Helper</p>
+        <p className="fine footnote">Unity Spark · Ideas use what you’ve shared with Spark Assist</p>
 
         <h2 className="section-title">Why this idea</h2>
         <div className="why-card">

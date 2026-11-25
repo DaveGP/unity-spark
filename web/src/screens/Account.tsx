@@ -39,7 +39,7 @@ export function Account({
   }
 
   const deleteAll = () => {
-    if (window.confirm('Delete all your projects and Spark Helper answers? This can’t be undone.')) studio.reset()
+    if (window.confirm('Delete all your projects and Spark Assist answers? This can’t be undone.')) studio.reset()
   }
 
   return (
@@ -86,7 +86,7 @@ export function Account({
           <div className="acct-card__head">
             <div>
               <h2>Your profile</h2>
-              <p className="muted small">Spark Helper asks these one at a time whenever you’re waiting on a build or a change, starting with the first four. Your answers guide Spark’s suggestions, ideas and how it talks to you.</p>
+              <p className="muted small">Spark Assist asks these one at a time whenever you’re waiting on a build or a change, starting with the first four. Your answers guide Spark’s suggestions, ideas and how it talks to you.</p>
             </div>
             <span className="profile-count">{answeredCount} of {PROFILE_QUESTIONS.length}</span>
           </div>
@@ -94,7 +94,7 @@ export function Account({
           <div className="acct-row helper-toggle">
             <div>
               <strong>Ask questions while I wait</strong>
-              <p className="muted small">{studio.helperOff ? 'Off for this session. Spark Helper will start asking again next time you visit.' : 'On. Spark Helper asks one question during each build or change.'}</p>
+              <p className="muted small">{studio.helperOff ? 'Off for this session. Spark Assist will start asking again next time you visit.' : 'On. Spark Assist asks one question during each build or change.'}</p>
             </div>
             <button className={`btn btn--sm ${studio.helperOff ? 'btn--primary' : 'btn--ghost'}`} onClick={() => studio.setHelperOff(!studio.helperOff)}>
               {studio.helperOff ? 'Turn back on' : 'Turn off for this session'}
@@ -176,7 +176,7 @@ export function Account({
           <div className="acct-row">
             <div>
               <strong>Delete all projects</strong>
-              <p className="muted small">Removes every project and your Spark Helper answers from this browser.</p>
+              <p className="muted small">Removes every project and your Spark Assist answers from this browser.</p>
             </div>
             <button className="btn btn--danger btn--sm" onClick={deleteAll} disabled={projects.length === 0 && answeredCount === 0}>Delete…</button>
           </div>

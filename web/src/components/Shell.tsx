@@ -98,7 +98,7 @@ export function SparkHeader({ helper, badge }: { helper?: boolean; badge?: strin
   if (!helper) return <span className="spark-label">Spark</span>
   return (
     <span className="spark-label spark-label--helper">
-      <i className="helper-dot" /> Spark Helper <span className="pill pill--helper">{badge ?? 'While you wait'}</span>
+      <i className="helper-dot" /> Spark Assist <span className="pill pill--helper">{badge ?? 'While you wait'}</span>
     </span>
   )
 }

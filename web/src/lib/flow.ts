@@ -239,7 +239,7 @@ export function titleFor(prompt: string, clarification?: string) {
 
 export const isShortPrompt = (prompt: string) => prompt.trim().split(/\s+/).length <= 3
 
-/** Draft the next project's opening prompt from what the player told Spark Helper. */
+/** Draft the next project's opening prompt from what the player told Spark Assist. */
 export function draftFromAnswers(a: Answers) {
   const games = a.games.toLowerCase()
   if (/gta|grand theft|heist/.test(games)) {
@@ -266,7 +266,7 @@ export function draftFromAnswers(a: Answers) {
   }
 }
 
-// ───────────────────────── Spark Helper profile questions ─────────────────────────
+// ───────────────────────── Spark Assist profile questions ─────────────────────────
 // Asked one at a time whenever the user is waiting on a build or a change. The first four
 // (ONB-110) come first; the rest build up the user's profile over later builds and changes.
 

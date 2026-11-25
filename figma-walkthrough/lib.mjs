@@ -229,7 +229,7 @@ export function userMsg(rightX, y, text, maxW = 460) {
 
 export function sparkHeader(x, y, label = 'Spark', o = {}) {
   if (o.helper) {
-    return G('Agent / Helper', `<circle cx="${x + 5}" cy="${y - 4}" r="5" fill="${C.helper}"/>`, T(x + 16, y, 'Spark Helper', { size: 11, weight: 600, fill: C.helper, id: 'Name' }), pill(x + 16 + Math.round(tw('Spark Helper', 11, 600) * 1.15) + 10, y - 16, o.badge ?? 'While you wait', { tone: 'helper', size: 10 }).svg)
+    return G('Agent / Helper', `<circle cx="${x + 5}" cy="${y - 4}" r="5" fill="${C.helper}"/>`, T(x + 16, y, 'Spark Assist', { size: 11, weight: 600, fill: C.helper, id: 'Name' }), pill(x + 16 + Math.round(tw('Spark Assist', 11, 600) * 1.15) + 10, y - 16, o.badge ?? 'While you wait', { tone: 'helper', size: 10 }).svg)
   }
   return T(x, y, label, { size: 11, weight: 600, fill: C.accentText, id: 'Agent name' })
 }
