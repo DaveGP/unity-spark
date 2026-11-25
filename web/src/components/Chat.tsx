@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import {
-  CLARIFY_OPTIONS, THEMES, changeByTitle, changesFor, EXPERIENCE, FEEDBACK_CHIPS, GENRES, PLAY_STYLE, PROFILE_QUESTIONS, QUESTION_BY_ID,
+  CLARIFY_OPTIONS, THEMES, changeByTitle, changesFor, EXPERIENCE, FEEDBACK_CHIPS, GENRES, PLAY_STYLE, QUESTION_BY_ID,
   answersComplete, answersSummary, buildStepsFor, formatAnswer, isAnswered,
   type Answers, type ProfileQuestion, type ProfileValue, type ChangeDef, type ChangeId, type Msg, type Project,
 } from '../lib/flow'
@@ -143,7 +143,6 @@ function AskCard({ qid, skipped, off, project, studio }: { qid: string; skipped?
   const q = QUESTION_BY_ID[qid]
   const value = studio.profile[qid]
   if (!q) return null
-  const answered = PROFILE_QUESTIONS.filter((x) => isAnswered(studio.profile[x.id])).length
   if (isAnswered(value)) {
     return (
       <div className="helper helper--saved ask ask--done">
@@ -166,7 +165,7 @@ function AskCard({ qid, skipped, off, project, studio }: { qid: string; skipped?
   return (
     <div className="helper ask">
       <SparkHeader helper badge={busy ? (project.phase === 'working' ? 'While Spark works' : 'While you wait') : 'When you’re ready'} />
-      <p className="ask__group">{q.group} · Profile {answered} of {PROFILE_QUESTIONS.length}</p>
+      <p className="ask__group">{q.group}</p>
       <h4 className="ask__q">{q.text}</h4>
       <QuestionInput q={q} onSubmit={(v) => studio.answerQuestion(qid, v, project.id)} />
       <div className="ask__foot">
