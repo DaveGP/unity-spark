@@ -23,7 +23,7 @@ let h = logo(M, 100, 22)
 h += T(W - M, 100, 'FEATURE BRIEF · ONBOARDING', { size: 10, weight: 600, fill: C.muted, ls: 0.9, anchor: 'end', id: 'Doc type' })
 h += eyebrow(M, 178, 'Onboarding')
 h += T(M, 228, 'Spark Helper', { size: 46, weight: 600, id: 'Title' })
-const sub = P(M, 248, 'Quick questions, asked while Spark builds, that teach it who each user is so every suggestion fits them.', 820, { size: 18, lh: 27, fill: C.text2, id: 'Subtitle' })
+const sub = P(M, 248, 'Quick questions, asked while Spark builds. Spark Helper invites each user to tell us who they are. Every suggestion fits them, not our assumptions.', 820, { size: 18, lh: 27, fill: C.text2, id: 'Subtitle' })
 h += sub.svg
 svg += G('Header', h)
 
