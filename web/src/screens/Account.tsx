@@ -86,7 +86,7 @@ export function Account({
           <div className="acct-card__head">
             <div>
               <h2>Your profile</h2>
-              <p className="muted small">Spark Assist asks these one at a time whenever you’re waiting on a build or a change, starting with the first four. Your answers guide Spark’s suggestions, ideas and how it talks to you.</p>
+              <p className="muted small">Spark Assist asks questions during builds and changes, one at a time, starting with the first four. Your answers guide Spark’s suggestions, ideas and how it talks to you.</p>
             </div>
             <span className="profile-count">{answeredCount} of {PROFILE_QUESTIONS.length}</span>
           </div>
@@ -94,7 +94,7 @@ export function Account({
           <div className="acct-row helper-toggle">
             <div>
               <strong>Ask questions while I wait</strong>
-              <p className="muted small">{studio.helperOff ? 'Off for this session. Spark Assist will start asking again next time you visit.' : 'On. Spark Assist asks one question during each build or change.'}</p>
+              <p className="muted small">{studio.helperOff ? 'Off for this session. Spark Assist will start asking again next time you visit.' : 'On. Spark Assist asks questions during builds and changes.'}</p>
             </div>
             <button className={`btn btn--sm ${studio.helperOff ? 'btn--primary' : 'btn--ghost'}`} onClick={() => studio.setHelperOff(!studio.helperOff)}>
               {studio.helperOff ? 'Turn back on' : 'Turn off for this session'}

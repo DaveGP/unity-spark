@@ -135,7 +135,7 @@ y = top
     return { svg: out, h: by - 5 - yy }
   }
   const a = list(LX, 'First version', C.accent, [
-    'One question per wait, starting with the four core questions',
+    'Spark Assist asks questions during builds and changes, starting with the four core questions',
     'Skip, Not now and Don’t ask again',
     'Answers editable on the Account page',
     'Answers rank next steps and pitch new projects',

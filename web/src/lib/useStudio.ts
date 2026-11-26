@@ -118,7 +118,7 @@ export function useStudio() {
     later(() => { update(id, (p) => ({ ...p, thinking: false })); fn() }, ms)
   }, [later, update])
 
-  // ───────── Spark Assist: one profile question per wait ─────────
+  // ───────── Spark Assist: profile questions during builds and changes, one at a time ─────────
   /** Ask the next profile question, but only while the user is waiting and nothing else is open. */
   const askNext = useCallback((id: string) => {
     const p = projectsRef.current[id]

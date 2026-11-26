@@ -13,7 +13,7 @@ A clickable, in-browser prototype of **Unity Spark**: an AI chat service that tu
 3. Welcome, with idea chips in the prompt box (ONB-102)
 4. A very short prompt gets one clarifying question (ONB-111)
 5. Split view: build progress and live preview (ONB-104)
-6. Spark Assist asks preference questions while you wait (ONB-110), building a profile one question per build or change
+6. Spark Assist asks questions during builds and changes (ONB-110), one at a time, building up a profile
 7. Play the first playable, give feedback, and Spark suggests next steps (ONB-109)
 8. Spark works on the change; Undo history with redo
 9. Publish by link or to Google Playgrounds
