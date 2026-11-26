@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { recommendLook, type LookId } from './looks'
-import { persona, rankNextSteps, say } from './personalise'
+import { dreamDraft, persona, rankNextSteps, say } from './personalise'
+import { PITCHES, rankPitches } from './pitches'
 import {
-  BUILD_STEPS, LEGACY_CHANGE_IDS, NEXT_ORDER, changeByTitle, changesFor, PROFILE_QUESTIONS, answersComplete, isAnswered, isShortPrompt, titleFor,
-  type Answers, type Profile, type ProfileQuestion, type ProfileValue, type ChangeDef, type ChangeId, type ChangeSlot, type Msg, type Project,
+  BUILD_STEPS, MORE_IDEAS, STARTER_IDEAS, LEGACY_CHANGE_IDS, NEXT_ORDER, changeByTitle, changesFor, PROFILE_QUESTIONS, answersComplete, isAnswered, isShortPrompt, titleFor,
+  type Answers, type PromptOption, type Profile, type ProfileQuestion, type ProfileValue, type ChangeDef, type ChangeId, type ChangeSlot, type Msg, type Project,
 } from './flow'
 
 /*
@@ -26,6 +27,25 @@ interface Saved {
   projects: Record<string, Project>; order: string[]; profile?: Profile; profileSkipped?: string[]
   /** Older saves kept the first four answers separately. */
   answers?: Answers
+}
+
+/** Prototype only: the prompts Spark offers. Anything else is a custom prompt the prototype can't build yet. */
+function recommendedPrompts(profile: Profile): PromptOption[] {
+  const dream = dreamDraft(profile)
+  return [
+    ...STARTER_IDEAS.map(({ title, prompt, look }) => ({ title, prompt, look })),
+    ...MORE_IDEAS.map(({ title, prompt }) => ({ title, prompt, look: recommendLook(prompt) })),
+    ...PITCHES.map(({ title, prompt, look }) => ({ title, prompt, look })),
+    ...(dream ? [{ title: dream.title, prompt: dream.prompt, look: dream.look }] : []),
+  ]
+}
+
+const samePrompt = (a: string, b: string) => a.trim().replace(/[.!?]+$/, '').toLowerCase() === b.trim().replace(/[.!?]+$/, '').toLowerCase()
+
+/** Three prompts to offer instead: the best-fit pitches if the profile has anything in it, otherwise the starter ideas. */
+function promptChoices(profile: Profile): PromptOption[] {
+  if (Object.keys(profile).length === 0) return STARTER_IDEAS.map(({ title, prompt, look }) => ({ title, prompt, look }))
+  return rankPitches(profile).slice(0, 3).map(({ pitch: { title, prompt, look } }) => ({ title, prompt, look }))
 }
 
 const HELPER_OFF_KEY = 'unity-spark.helper-off'
@@ -153,7 +173,12 @@ export function useStudio() {
     }
     setProjects((all) => ({ ...all, [id]: project }))
     setOrder((o) => [id, ...o])
-    if (isShortPrompt(text)) {
+    const prof = profileRef.current.profile
+    const known = opts.look !== undefined || recommendedPrompts(prof).some((r) => samePrompt(r.prompt, text))
+    if (!known && !isShortPrompt(text)) {
+      // Prototype only: custom prompts come in the final build, so offer recommended ones instead.
+      reply(id, () => { update(id, (p) => ({ ...p, phase: 'pick' })); push(id, { kind: 'pickPrompt', options: promptChoices(prof) }) }, 900)
+    } else if (isShortPrompt(text)) {
       // ONB-111: one clarifying question, only when the first prompt is very short.
       reply(id, () => push(id, { kind: 'clarify' }), 1000)
     } else {
@@ -168,7 +193,7 @@ export function useStudio() {
       }, 900)
     }
     return id
-  }, [later, push, reply, startBuild])
+  }, [later, push, reply, startBuild, update])
 
   const answerClarify = useCallback((id: string, answer: string | null, typed = false) => {
     const p = projectsRef.current[id]
@@ -191,6 +216,23 @@ export function useStudio() {
         detailed: 'Perfect. I’ll create a Unity project, import an asset pack, lay out a first level, add a player and build a web preview, showing each step as I go.',
       }) })
       later(() => startBuild(id), 1400)
+    })
+  }, [later, push, reply, startBuild, update])
+
+  /** Prototype only: the user picked a recommended prompt after trying a custom one. */
+  const pickPrompt = useCallback((id: string, choice: PromptOption) => {
+    const p = projectsRef.current[id]
+    if (!p || p.phase !== 'pick' || p.thinking) return
+    push(id, { kind: 'user', text: choice.prompt })
+    update(id, (q) => ({ ...q, phase: 'building', prompt: choice.prompt, title: choice.title, look: choice.look }))
+    reply(id, () => {
+      const tone = persona(profileRef.current.profile).tone
+      push(id, { kind: 'spark', starting: true, text: say(tone, {
+        short: 'Good pick. Building your first playable now.',
+        friendly: 'Good pick. I’m building your first playable now — I’ll show you progress as I go.',
+        detailed: 'Good pick. I’ll create a Unity project, import an asset pack, lay out a first level, add a player and build a web preview, showing each step as I go.',
+      }) })
+      later(() => startBuild(id), 1200)
     })
   }, [later, push, reply, startBuild, update])
 
@@ -294,6 +336,12 @@ export function useStudio() {
     const p = projectsRef.current[id]
     if (!text || !p || p.thinking) return
     if (p.phase === 'clarify') return answerClarify(id, text, true)
+    if (p.phase === 'pick') {
+      const match = recommendedPrompts(profileRef.current.profile).find((r) => samePrompt(r.prompt, text) || samePrompt(r.title, text))
+      if (match) return pickPrompt(id, match)
+      push(id, { kind: 'user', text })
+      return reply(id, () => push(id, { kind: 'pickPrompt', options: promptChoices(profileRef.current.profile), again: true }))
+    }
     if (p.phase === 'building' || p.phase === 'working') {
       push(id, { kind: 'user', text })
       return reply(id, () => push(id, { kind: 'spark', text: 'Noted — I’ll pick that up as soon as this build finishes.' }))
@@ -302,7 +350,7 @@ export function useStudio() {
     if (last?.kind === 'feel') return sendFeedback(id, text)
     const known = changeByTitle(p.look, text)
     applyChange(id, known ?? 'custom', known ? undefined : text)
-  }, [answerClarify, applyChange, push, reply, sendFeedback])
+  }, [answerClarify, applyChange, pickPrompt, push, reply, sendFeedback])
 
   /** Keep the first `keep` changes; later ones move to `future` (oldest first) so they can be redone. */
   const undoTo = useCallback((id: string, keep: number) => {
@@ -339,7 +387,7 @@ export function useStudio() {
 
   return {
     projects, order, answers, answersSaved, profile, profileSkipped, helperOff,
-    startProject, answerClarify, setAnswers, setHelperOff, dismissHelper, answerQuestion, skipQuestion,
+    startProject, answerClarify, pickPrompt, setAnswers, setHelperOff, dismissHelper, answerQuestion, skipQuestion,
     played, sendFeedback, applyChange, send, undoTo, redoTo, publish, reset,
   }
 }

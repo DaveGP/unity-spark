@@ -187,6 +187,8 @@ export type Msg =
   | { kind: 'user'; text: string }
   | { kind: 'spark'; title?: string; text: string; chips?: string[]; starting?: boolean }
   | { kind: 'clarify' }
+  /** Prototype only: a custom first prompt, so Spark asks the user to pick a recommended one. */
+  | { kind: 'pickPrompt'; options: PromptOption[]; again?: boolean }
   | { kind: 'build' }
   | { kind: 'helper' }
   | { kind: 'ask'; qid: string; skipped?: boolean; off?: boolean }
@@ -198,7 +200,9 @@ export type Msg =
   | { kind: 'working'; change: ChangeDef; from: number }
   | { kind: 'done'; change: ChangeDef }
 
-export type Phase = 'clarify' | 'building' | 'ready' | 'working'
+export interface PromptOption { title: string; prompt: string; look: LookId }
+
+export type Phase = 'pick' | 'clarify' | 'building' | 'ready' | 'working'
 
 export interface Project {
   id: string

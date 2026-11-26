@@ -225,6 +225,26 @@ export function ChatThread({
           </div>
         )
 
+      case 'pickPrompt': {
+        const active = p.phase === 'pick' && !p.thinking && i === lastSpark
+        return (
+          <div className="msg msg--spark">
+            <SparkHeader />
+            {m.again
+              ? <p>Custom prompts aren’t available in this prototype yet. Pick one of these to keep going:</p>
+              : <>
+                  <p>This is a prototype, so I can’t build custom prompts yet. They’ll be available in the final build.</p>
+                  <h3 className="msg__question">Pick one of these recommended prompts to continue:</h3>
+                </>}
+            <div className="chips">
+              {m.options.map((o) => (
+                <button key={o.title} className="chip" disabled={!active} title={o.prompt} onClick={() => studio.pickPrompt(p.id, o)}>✦ {o.title}</button>
+              ))}
+            </div>
+          </div>
+        )
+      }
+
       case 'clarify': {
         const answer = msgs[i + 1]?.kind === 'user' ? (msgs[i + 1] as { text: string }).text : null
         const active = p.phase === 'clarify' && !p.thinking

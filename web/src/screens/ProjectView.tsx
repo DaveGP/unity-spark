@@ -34,7 +34,8 @@ export function ProjectView({
   }, [doneCount, setPlaying])
 
   let placeholder = 'Describe a change…'
-  if (p.phase === 'clarify') placeholder = 'Answer, or describe it in your own words…'
+  if (p.phase === 'pick') placeholder = 'Pick a recommended prompt above…'
+  else if (p.phase === 'clarify') placeholder = 'Answer, or describe it in your own words…'
   else if (p.phase === 'building' && helperOpen) placeholder = 'Answer, or describe a change…'
   else if (p.phase === 'working') placeholder = 'Keep chatting while Spark works…'
   else if (p.phase === 'ready') {
