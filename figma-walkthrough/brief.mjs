@@ -265,7 +265,7 @@ let ft = R(M, fy, W - 2 * M, 1, { fill: C.line, id: 'Divider' })
 const links = [
   ['Prototype', 'davegp.github.io/unity-spark'],
   ['Figma', 'Unity Spark – Onboarding walkthrough'],
-  ['FigJam', 'Onboarding flow (Testing board)'],
+  ['FigJam', 'Unity Spark – Onboarding flow'],
   ['Code', 'github.com/DaveGP/unity-spark'],
 ]
 const colW = (W - 2 * M) / links.length
