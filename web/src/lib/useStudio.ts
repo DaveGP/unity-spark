@@ -30,7 +30,7 @@ interface Saved {
 }
 
 /** Prototype only: the prompts Spark offers. Anything else is a custom prompt the prototype can't build yet. */
-function recommendedPrompts(profile: Profile): PromptOption[] {
+export function recommendedPrompts(profile: Profile): PromptOption[] {
   const dream = dreamDraft(profile)
   return [
     ...STARTER_IDEAS.map(({ title, prompt, look }) => ({ title, prompt, look })),
@@ -40,10 +40,14 @@ function recommendedPrompts(profile: Profile): PromptOption[] {
   ]
 }
 
+/** The offered prompt this text matches (by prompt or title), if any. */
+export const findRecommendedPrompt = (profile: Profile, text: string) =>
+  recommendedPrompts(profile).find((r) => samePrompt(r.prompt, text) || samePrompt(r.title, text))
+
 const samePrompt = (a: string, b: string) => a.trim().replace(/[.!?]+$/, '').toLowerCase() === b.trim().replace(/[.!?]+$/, '').toLowerCase()
 
 /** Three prompts to offer instead: the best-fit pitches if the profile has anything in it, otherwise the starter ideas. */
-function promptChoices(profile: Profile): PromptOption[] {
+export function promptChoices(profile: Profile): PromptOption[] {
   if (Object.keys(profile).length === 0) return STARTER_IDEAS.map(({ title, prompt, look }) => ({ title, prompt, look }))
   return rankPitches(profile).slice(0, 3).map(({ pitch: { title, prompt, look } }) => ({ title, prompt, look }))
 }

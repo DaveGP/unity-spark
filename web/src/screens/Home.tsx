@@ -1,21 +1,39 @@
 import { useRef, useState, type KeyboardEvent } from 'react'
 import { Scene } from '../art/Scenes'
-import { HelperQuestions } from '../components/Chat'
+import { HelperQuestions, PrototypeNotice } from '../components/Chat'
 import { Composer } from '../components/Composer'
-import { MORE_IDEAS, STARTER_IDEAS, answersComplete } from '../lib/flow'
-import type { Studio } from '../lib/useStudio'
+import { MORE_IDEAS, STARTER_IDEAS, answersComplete, type Profile, type PromptOption } from '../lib/flow'
+import { findRecommendedPrompt, promptChoices, type Studio } from '../lib/useStudio'
 import { draftNotes, dreamDraft } from '../lib/personalise'
 import { rankPitches, type Pitch } from '../lib/pitches'
 import type { LookId } from '../lib/looks'
 
+type StartFn = (prompt: string, opts?: { look?: LookId; title?: string }) => void
+
+/** Prototype only: recommended prompts start a project; anything else gets the notice on this page. */
+function usePromptGate(profile: Profile, onStart: StartFn) {
+  const [attempts, setAttempts] = useState<string[]>([])
+  const submit = (text: string, opts?: { look?: LookId; title?: string }) => {
+    const t = text.trim()
+    if (!t) return
+    if (opts?.look) return onStart(t, opts)
+    const match = findRecommendedPrompt(profile, t)
+    if (match) onStart(match.prompt, { look: match.look, title: match.title })
+    else setAttempts((a) => [...a, t])
+  }
+  const notice = <PrototypeNotice attempts={attempts} options={promptChoices(profile)} onPick={(o: PromptOption) => onStart(o.prompt, { look: o.look, title: o.title })} />
+  return { submit, notice }
+}
+
 /** ONB-102: the first screen after sign-in, with ideas inside the empty prompt box. */
-export function Home({ name, onStart }: { name: string; onStart: (prompt: string) => void }) {
+export function Home({ name, profile = {}, onStart }: { name: string; profile?: Profile; onStart: StartFn }) {
   const [text, setText] = useState('')
+  const gate = usePromptGate(profile, onStart)
   const [page, setPage] = useState(0)
   const box = useRef<HTMLTextAreaElement>(null)
   const pool = [...STARTER_IDEAS.map((i) => ({ title: i.title, prompt: i.prompt })), ...MORE_IDEAS]
   const chips = [0, 1, 2].map((k) => pool[(page * 3 + k) % pool.length])
-  const send = () => { if (text.trim()) onStart(text) }
+  const send = () => { if (!text.trim()) return; gate.submit(text); setText('') }
   const onKey = (e: KeyboardEvent<HTMLTextAreaElement>) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } }
   const use = (prompt: string) => { setText(prompt); box.current?.focus() }
 
@@ -41,6 +59,7 @@ export function Home({ name, onStart }: { name: string; onStart: (prompt: string
           </div>
         </div>
         <p className="fine footnote">Unity Spark · Prototype</p>
+        {gate.notice}
 
         <h2 className="section-title">Or start from an idea</h2>
         <div className="idea-grid">
@@ -70,6 +89,7 @@ export function NewChat({ name, studio, onStart, onSkip }: {
   const [showMore, setShowMore] = useState(false)
   const [editing, setEditing] = useState(false)
   const [text, setText] = useState<string | null>(null)
+  const gate = usePromptGate(studio.profile, onStart)
   // All ten Synty pitches, best fit for this profile first.
   const ranked = rankPitches(studio.profile)
   const current = ranked[pick % ranked.length]
@@ -87,9 +107,10 @@ export function NewChat({ name, studio, onStart, onSkip }: {
           <h1 className="h1 h1--xl">Before we start, {name}…</h1>
           <p className="muted intro">A few quick questions so I can suggest ideas that fit you. You can skip and describe your own idea any time.</p>
           <HelperQuestions large answers={studio.answers} setAnswers={studio.setAnswers} onSave={() => setAsking(false)} onSkip={onSkip} />
+          {gate.notice}
         </div>
         <div className="page__composer">
-          <Composer placeholder="Or skip ahead and describe your idea…" onSend={(t) => onStart(t)} footnote="Unity Spark · Your answers are saved to your profile, so Spark won’t ask them again" />
+          <Composer placeholder="Or skip ahead and describe your idea…" onSend={(t) => gate.submit(t)} footnote="Unity Spark · Your answers are saved to your profile, so Spark won’t ask them again" />
         </div>
       </div>
     )
@@ -112,10 +133,11 @@ export function NewChat({ name, studio, onStart, onSkip }: {
               <button className="chip" onClick={() => choose(pick + 1)}>↻ Another idea</button>
               <button className={`chip ${editing ? 'chip--on' : ''}`} onClick={() => setEditing((e) => !e)}>✎ Edit the prompt</button>
             </div>
-            <button className="btn btn--primary btn--sm" onClick={() => onStart(prompt, { look: pitch.look, title: pitch.title })}>Send</button>
+            <button className="btn btn--primary btn--sm" onClick={() => gate.submit(prompt, text === null || text.trim() === pitch.prompt ? { look: pitch.look, title: pitch.title } : undefined)}>Send</button>
           </div>
         </div>
         <p className="fine footnote">Unity Spark · Ideas use what you’ve shared with Spark Assist</p>
+        {gate.notice}
 
         <h2 className="section-title">Why this idea</h2>
         <div className="why-card">

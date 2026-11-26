@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import {
   CLARIFY_OPTIONS, THEMES, changeByTitle, changesFor, EXPERIENCE, FEEDBACK_CHIPS, GENRES, PLAY_STYLE, QUESTION_BY_ID,
   answersComplete, answersSummary, buildStepsFor, formatAnswer, isAnswered,
-  type Answers, type ProfileQuestion, type ProfileValue, type ChangeDef, type ChangeId, type Msg, type Project,
+  type Answers, type ProfileQuestion, type ProfileValue, type ChangeDef, type ChangeId, type Msg, type Project, type PromptOption,
 } from '../lib/flow'
 import { STEP_MS, type Studio } from '../lib/useStudio'
 import { howItWorks, persona, say, tweaks, unityFiles } from '../lib/personalise'
@@ -182,6 +182,41 @@ function AskCard({ qid, skipped, off, project, studio }: { qid: string; skipped?
 function ChangeThumb({ change }: { change: ChangeDef }) {
   const style: CSSProperties = { objectPosition: change.focus, transform: `scale(${change.zoom})`, transformOrigin: change.focus }
   return <div className="thumb"><img src={change.image} alt="" style={style} /></div>
+}
+
+/**
+ * Prototype only: shown on the page where a custom (or very short) prompt was typed,
+ * so nothing on that page is cleared. Picking a recommended prompt starts the project.
+ */
+export function PrototypeNotice({ attempts, options, onPick }: {
+  attempts: string[]; options: PromptOption[]; onPick: (o: PromptOption) => void
+}) {
+  const end = useRef<HTMLDivElement>(null)
+  useEffect(() => { end.current?.scrollIntoView?.({ behavior: 'smooth', block: 'end' }) }, [attempts.length])
+  if (!attempts.length) return null
+  return (
+    <div className="notice-thread" ref={end}>
+      {attempts.map((a, i) => (
+        <div key={i} className="notice-thread__turn">
+          <UserMsg text={a} />
+          <div className="msg msg--spark">
+            <SparkHeader />
+            {i === 0
+              ? <>
+                  <p>This is a prototype, so I can’t build custom prompts yet. They’ll be available in the final build.</p>
+                  <h3 className="msg__question">Pick one of these recommended prompts to continue:</h3>
+                </>
+              : <p>Custom prompts aren’t available in this prototype yet. Pick one of these to keep going:</p>}
+            <div className="chips">
+              {options.map((o) => (
+                <button key={o.title} className="chip" disabled={i !== attempts.length - 1} title={o.prompt} onClick={() => onPick(o)}>✦ {o.title}</button>
+              ))}
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
 }
 
 function UserMsg({ text }: { text: string }) {

@@ -740,3 +740,7 @@ button.chip--accent:hover { background: #d3c7ff; color: var(--accent-ink); borde
 .pack-tile--orbital { background: linear-gradient(135deg, #1b1f3a, #5b4a9c); }
 .pack-tile--city { background: linear-gradient(135deg, #e8806b, #e9c46a); }
 @media (max-width: 900px) { .pitch-grid { grid-template-columns: 1fr; } }
+
+/* Prototype notice shown on the page where a custom prompt was typed */
+.notice-thread { display: grid; gap: 20px; margin: 20px 0 8px; }
+.notice-thread__turn { display: grid; gap: 14px; }
