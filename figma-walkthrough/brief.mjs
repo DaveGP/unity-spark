@@ -258,6 +258,20 @@ y = top
   })
   y += topics.length * rh
 }
+// What the feature relies on.
+{
+  y += 22
+  let s = R(RX, y, RW, 2, { rx: 1, fill: C.muted, id: 'Rule' })
+    + T(RX, y + 22, 'KEY ASSUMPTIONS', { size: 10.5, weight: 600, fill: C.muted, ls: 0.8, id: 'Label' })
+  let by = y + 32
+  ;['Scripted questions, no AI work needed.', 'AI model already has a concept of memory.', 'Users will answer optional questions.'].forEach((t) => {
+    const p = P(RX + 14, by, t, RW - 14, { size: 13.5, lh: 20, fill: C.text2, id: 'Bullet' })
+    s += `<circle cx="${RX + 3}" cy="${by + 10}" r="2.5" fill="${C.muted}"/>` + p.svg
+    by += p.h + 5
+  })
+  right += G('Key assumptions', s)
+  y = by - 5
+}
 svg += G('Visuals', right)
 const rightEnd = y
 
