@@ -98,7 +98,7 @@ y = top
   let s = head('02', 'Why we think so', y)
   let yy = y + HEAD
   ;[
-    'The onboarding funnel shows 38% of users abandon their project during the initial build (median 8 min 50 s), as there is nothing to keep them engaged.',
+    '38% of people who drop off before getting something playable leave during the first build (median 8 min 50 s), with nothing to keep them engaged.',
     'User sessions show users with wildly different backgrounds and skill levels. Each type of user needs a different level of support and prompting.',
     'AI models increasingly use memory to tailor their responses, so users increasingly expect personalisation.',
   ].forEach((t) => { const b = bullet(t, LX, yy, LW); s += b.svg; yy += b.h + 8 })
@@ -153,7 +153,8 @@ y = top
   s += a.svg
   let my = y + HEAD + a.h + 14
   const metrics = [
-    ['Primary', 'First-build abandonment falls from 38% to 25%', C.accent],
+    ['Primary', 'Prompt to playable rises from 57% to 65%', C.accent],
+    ['Secondary', 'Fewer drop-offs during the first build (now 38%)', C.accent],
     ['Leading signal', 'Share of users who answer a question, and average answered', C.ok],
     ['Personalisation', 'Share of suggested next steps chosen with “Do this next”', C.ok],
     ['Guardrails', 'Low dismiss rate; time to first playable unchanged', '#e9c46a'],
@@ -163,7 +164,7 @@ y = top
       i ? R(LX, my, LW, 1, { fill: C.line, id: 'Rule' }) : '',
       T(LX, my + 20, k.toUpperCase(), { size: 10, weight: 600, fill: col, ls: 0.8, id: 'Kind' }),
       T(LX + 132, my + 20.5, v, { size: 13.5, fill: C.text2, id: 'Measure' }))
-    my += 28
+    my += 25
   })
   const ab = P(LX, my + 10, 'We’ll A/B test it first: Spark Assist on versus off for new users.', LW, { size: 13.5, lh: 20, fill: C.muted, id: 'Test plan' })
   s += ab.svg
@@ -189,12 +190,13 @@ let right = ''
 y = top
 // The number that matters.
 {
-  const ch = 168
+  const cap = P(RX + 28, y + 110, 'of people who leave before getting something playable do so while their first build is running', RW - 56, { size: 14, lh: 21, fill: C.text2, id: 'Caption' })
+  const ch = 110 + cap.h + 22
   right += G('Stat – build abandonment',
     R(RX, y, RW, ch, { rx: 16, fill: C.card, stroke: C.line2, id: 'Card' }),
     T(RX + 28, y + 92, '38%', { size: 64, weight: 600, fill: C.accent, id: 'Number' }),
-    P(RX + 28, y + 110, 'of new users abandon their project during the first build', RW - 56, { size: 14, lh: 21, fill: C.text2, id: 'Caption' }).svg,
-    T(RX + RW - 24, y + 30, 'Source: onboarding funnel, Q3 2026', { size: 10.5, fill: C.faint, anchor: 'end', id: 'Source' }))
+    cap.svg,
+    T(RX + RW - 24, y + 30, 'Onboarding data, last 30 days', { size: 10.5, fill: C.faint, anchor: 'end', id: 'Source' }))
   y += ch + 24
 }
 // A sketch of what the user sees: one question at a time.
