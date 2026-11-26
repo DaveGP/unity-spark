@@ -208,20 +208,14 @@ export function useStudio() {
       : answer
     push(id, { kind: 'user', text })
     update(id, (q) => ({
-      ...q, phase: 'building',
+      ...q, phase: 'pick',
       title: answer === null && forest ? 'Forest firefly collector' : titleFor(q.prompt, answer ?? ''),
       look: recommendLook(`${q.prompt} ${answer ?? ''}`),
     }))
-    reply(id, () => {
-      const tone = persona(profileRef.current.profile).tone
-      push(id, { kind: 'spark', starting: true, text: say(tone, {
-        short: 'Got it. Building your first playable now.',
-        friendly: 'Perfect. I’m building your first playable now — I’ll show you progress as I go.',
-        detailed: 'Perfect. I’ll create a Unity project, import an asset pack, lay out a first level, add a player and build a web preview, showing each step as I go.',
-      }) })
-      later(() => startBuild(id), 1400)
-    })
-  }, [later, push, reply, startBuild, update])
+    // Prototype only: the clarifying question (ONB-111) is shown, but a short prompt is still a
+    // custom prompt, so Spark asks the user to pick a recommended one instead of building.
+    reply(id, () => push(id, { kind: 'pickPrompt', options: promptChoices(profileRef.current.profile) }))
+  }, [push, reply, update])
 
   /** Prototype only: the user picked a recommended prompt after trying a custom one. */
   const pickPrompt = useCallback((id: string, choice: PromptOption) => {

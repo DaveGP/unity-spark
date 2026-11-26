@@ -2,16 +2,16 @@ import { useRef, useState, type KeyboardEvent } from 'react'
 import { Scene } from '../art/Scenes'
 import { HelperQuestions, PrototypeNotice } from '../components/Chat'
 import { Composer } from '../components/Composer'
-import { MORE_IDEAS, STARTER_IDEAS, answersComplete, type Profile, type PromptOption } from '../lib/flow'
+import { MORE_IDEAS, STARTER_IDEAS, answersComplete, isShortPrompt, type Profile, type PromptOption } from '../lib/flow'
 import { findRecommendedPrompt, promptChoices, type Studio } from '../lib/useStudio'
 import { draftNotes, dreamDraft } from '../lib/personalise'
 import { rankPitches, type Pitch } from '../lib/pitches'
 import type { LookId } from '../lib/looks'
 
-type StartFn = (prompt: string, opts?: { look?: LookId; title?: string }) => void
+export type StartFn = (prompt: string, opts?: { look?: LookId; title?: string }) => void
 
 /** Prototype only: recommended prompts start a project; anything else gets the notice on this page. */
-function usePromptGate(profile: Profile, onStart: StartFn) {
+export function usePromptGate(profile: Profile, onStart: StartFn) {
   const [attempts, setAttempts] = useState<string[]>([])
   const submit = (text: string, opts?: { look?: LookId; title?: string }) => {
     const t = text.trim()
@@ -19,6 +19,8 @@ function usePromptGate(profile: Profile, onStart: StartFn) {
     if (opts?.look) return onStart(t, opts)
     const match = findRecommendedPrompt(profile, t)
     if (match) onStart(match.prompt, { look: match.look, title: match.title })
+    // Very short prompts open a project so the clarifying question (ONB-111) can be shown first.
+    else if (isShortPrompt(t)) onStart(t)
     else setAttempts((a) => [...a, t])
   }
   const notice = <PrototypeNotice attempts={attempts} options={promptChoices(profile)} onPick={(o: PromptOption) => onStart(o.prompt, { look: o.look, title: o.title })} />

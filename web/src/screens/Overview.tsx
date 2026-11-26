@@ -6,6 +6,7 @@ import { THEMES, changesFor, type ChangeSlot, type Project } from '../lib/flow'
 import { overviewNudge, rankNextSteps } from '../lib/personalise'
 import { LOOKS } from '../lib/looks'
 import { hasChange, isPlayable, versionOf, type Studio } from '../lib/useStudio'
+import { usePromptGate, type StartFn } from './Home'
 
 const greeting = () => {
   const h = new Date().getHours()
@@ -30,8 +31,9 @@ export function Overview({
   onPlay: (id: string) => void
   onSuggest: (id: string, change: ChangeSlot | 'custom', text?: string) => void
   onPublish: (id: string) => void
-  onStart: (prompt: string) => void
+  onStart: StartFn
 }) {
+  const gate = usePromptGate(studio.profile, onStart)
   const list = studio.order.map((id) => studio.projects[id]).filter(Boolean) as Project[]
   const latest = list[0]
   const playable = latest && isPlayable(latest)
@@ -99,9 +101,10 @@ export function Overview({
             </div>
           </>
         )}
+        {gate.notice}
       </div>
       <div className="page__composer">
-        <Composer placeholder="Start something new, or ask Spark about your game…" onSend={onStart} footnote="Unity Spark · Your projects are saved automatically" />
+        <Composer placeholder="Start something new, or ask Spark about your game…" onSend={(t) => gate.submit(t)} footnote="Unity Spark · Your projects are saved automatically" />
       </div>
     </div>
   )

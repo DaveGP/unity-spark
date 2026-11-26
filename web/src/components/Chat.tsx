@@ -185,7 +185,7 @@ function ChangeThumb({ change }: { change: ChangeDef }) {
 }
 
 /**
- * Prototype only: shown on the page where a custom (or very short) prompt was typed,
+ * Prototype only: shown on the page where a custom prompt was typed,
  * so nothing on that page is cleared. Picking a recommended prompt starts the project.
  */
 export function PrototypeNotice({ attempts, options, onPick }: {
