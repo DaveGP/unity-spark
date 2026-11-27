@@ -100,7 +100,7 @@ y = top
   ;[
     '38% of people who drop off before getting something playable leave during the first build (median 8 min 50 s), with nothing to keep them engaged.',
     'User sessions show users with wildly different backgrounds and skill levels. Each type of user needs a different level of support and prompting.',
-    'AI models increasingly use memory to tailor their responses, so users increasingly expect personalisation.',
+    'Short prompts lead to generic games: 60% of first prompts are under 10 words, and users say the result “felt like someone else’s game”.',
   ].forEach((t) => { const b = bullet(t, LX, yy, LW); s += b.svg; yy += b.h + 8 })
   left += G('02 Why we think so', s)
   y = yy - 8 + GAP
@@ -109,7 +109,7 @@ y = top
 // 03 The feature
 {
   let s = head('03', 'The feature', y)
-  const a = body('Spark Assist is a series of questions designed to learn about the user. It asks them while the primary agent is building prototypes and making changes, keeping users engaged during these waits while building up a profile that informs future decisions across projects. Users can check and amend their profile at any time from their account page.', y + HEAD)
+  const a = body('Spark Assist asks quick questions while Spark builds and makes changes, turning waiting time into something useful. Each answer builds a profile that shapes the suggestions Spark makes, so the game feels like theirs. Users can review and edit their profile from their account page.', y + HEAD)
   s += a.svg
   left += G('03 The feature', s)
   y += HEAD + a.h + GAP
@@ -140,7 +140,7 @@ y = top
     'Answers editable on the Account page',
     'Answers rank next steps and pitch new projects',
   ])
-  const b = col(LX + cw + 28, 'Later', C.muted, 'The AI team uses the profile to further improve the quality of responses and refine the experience for each individual.')
+  const b = col(LX + cw + 28, 'Later', C.muted, 'New questions added over time, with old answers that expire or resurface as users change. The AI team uses the profile to further improve the quality of responses for each individual.')
   s += G('First version', a.svg) + G('Later', b.svg)
   left += G('04 Roadmap', s)
   y = yy + Math.max(a.h, b.h) + GAP
@@ -166,7 +166,7 @@ y = top
       T(LX + 132, my + 20.5, v, { size: 13.5, fill: C.text2, id: 'Measure' }))
     my += 25
   })
-  const ab = P(LX, my + 10, 'We’ll A/B test it first: Spark Assist on versus off for new users.', LW, { size: 13.5, lh: 20, fill: C.muted, id: 'Test plan' })
+  const ab = P(LX, my + 10, 'We’ll A/B test it for four weeks: Spark Assist on versus off for new users.', LW, { size: 13.5, lh: 20, fill: C.muted, id: 'Test plan' })
   s += ab.svg
   const py = my + 10 + ab.h - 28
   left += G('05 How we’ll know it worked', s)
@@ -176,7 +176,7 @@ y = top
 // 06 Risks
 {
   let s = head('06', 'Risks', y)
-  const a = body('Some users may find the questions annoying, so they can dismiss Spark Assist and turn it back on later from their profile. Others may worry about what we store, so answers are optional, visible, editable and only used inside Spark.', y + HEAD)
+  const a = body('Some users may find the questions annoying or distracting, so they sit beside build progress and can be dismissed, then turned back on from their profile. Others may worry about what we store, so answers are optional, visible, editable and only used inside Spark.', y + HEAD)
   s += a.svg
   left += G('06 Risks', s)
   y += HEAD + a.h
