@@ -87,7 +87,7 @@ y = top
 // 01 The problem
 {
   let s = head('01', 'The problem', y)
-  const b = body('Unity Spark lets anyone make the game they have in their head. We can expect a wide variety of users, from casual gamers to experienced developers. Unity Spark needs to understand every user’s interests, understanding and communication style to provide the best possible experience and keep them engaged.', y + HEAD)
+  const b = body('New users wait almost nine minutes for their first build with nothing to do, and many leave. Those who stay often get a generic game, because Spark doesn’t know who they are. With users ranging from casual gamers to experienced developers, Spark needs to understand each one to keep them engaged.', y + HEAD)
   s += b.svg
   left += G('01 The problem', s)
   y += HEAD + b.h + GAP
